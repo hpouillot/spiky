@@ -6,7 +6,7 @@ import (
 )
 
 func Output(source core.Dataset) core.Layer {
-	layerSize := source.Size()
-	kernel := &kernels.StdpKernel{}
-	return Layer(layerSize, kernel)
+	layerSize := source.Shape()
+	kernel := &kernels.OutputKernel{}
+	return Layer(layerSize[0], kernel)
 }

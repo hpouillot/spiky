@@ -6,9 +6,9 @@ import (
 )
 
 func Input(source core.Dataset) core.Layer {
-	layerSize := source.Size()
+	layerSize := source.Shape()
 	kernel := &kernels.InputKernel{
 		Dataset: source,
 	}
-	return Layer(layerSize, kernel)
+	return Layer(layerSize[0], kernel)
 }

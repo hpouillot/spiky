@@ -1,4 +1,4 @@
-package env
+package data
 
 import (
 	"math"
@@ -27,13 +27,13 @@ func TestText(t *testing.T) {
 		"Hello",
 		"Coucou",
 	})
-	if dataset.Size() != 6 {
+	if dataset.Shape()[0] != 6 {
 		t.Error("Invalid size")
 	}
 	stringBytes := []byte("Hello")
 	for idx, currentByte := range stringBytes {
 		position := core.Point{
-			X: float64(idx) / float64(dataset.Size()),
+			X: float64(idx) / float64(dataset.Shape()[0]),
 			Y: 0,
 			Z: 0,
 		}

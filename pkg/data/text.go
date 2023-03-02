@@ -1,4 +1,4 @@
-package env
+package data
 
 import (
 	"spiky/pkg/core"

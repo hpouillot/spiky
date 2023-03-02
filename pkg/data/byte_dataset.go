@@ -1,4 +1,4 @@
-package env
+package data
 
 import (
 	"math"
@@ -51,6 +51,6 @@ func (bd *byteDataset) Reset() {
 	bd.distributions = make([]distuv.Bernoulli, bd.size)
 }
 
-func (bd *byteDataset) Size() int {
-	return bd.size
+func (bd *byteDataset) Shape() [3]int {
+	return [3]int{bd.size, 0, 0}
 }

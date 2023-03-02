@@ -5,8 +5,8 @@ package cmd
 
 import (
 	"fmt"
+	"spiky/pkg/data"
 	"spiky/pkg/edges"
-	"spiky/pkg/env"
 	"spiky/pkg/layers"
 	"spiky/pkg/models"
 
@@ -18,7 +18,7 @@ var trainCmd = &cobra.Command{
 	Use:   "train",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		source := env.Text([]string{
+		source := data.Text([]string{
 			"1",
 			"2",
 			"3",
@@ -26,7 +26,7 @@ var trainCmd = &cobra.Command{
 			"5",
 			"6",
 		}) // Sized, Localized dataset ?
-		target := env.Text([]string{
+		target := data.Text([]string{
 			"Y",
 			"N",
 			"Y",

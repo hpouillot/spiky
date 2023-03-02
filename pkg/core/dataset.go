@@ -4,6 +4,6 @@ type Dataset interface {
 	Get(point Point, time Time) bool
 	Next()
 	Reset()
-	Size() int
+	Shape() [3]int
 	HasNext() bool
 }

@@ -18,5 +18,5 @@ func (k *InputKernel) Compute(node core.Node, time core.Time, queue *core.Queue)
 }
 
 func (k *InputKernel) Update(node core.Node, time core.Time) {
-	// Apply STDP
+	// Move sensors depending on dataset. Capture more data ?
 }

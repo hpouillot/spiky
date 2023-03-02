@@ -2,8 +2,8 @@ package models
 
 import (
 	"spiky/pkg/core"
+	"spiky/pkg/data"
 	"spiky/pkg/edges"
-	"spiky/pkg/env"
 	"spiky/pkg/layers"
 	"testing"
 )
@@ -22,7 +22,7 @@ func (mk *MockedKernel) Update(node *core.Node, time core.Time) {
 }
 
 func TestModelInstantiation(t *testing.T) {
-	source := env.Text([]string{
+	source := data.Text([]string{
 		"1",
 		"2",
 		"3",
@@ -30,7 +30,7 @@ func TestModelInstantiation(t *testing.T) {
 		"5",
 		"6",
 	}) // Sized, Localized dataset ?
-	target := env.Text([]string{
+	target := data.Text([]string{
 		"Y",
 		"N",
 		"Y",
