@@ -43,7 +43,7 @@ var trainCmd = &cobra.Command{
 		model := models.Model(input, output)
 
 		for k := 0; k < 5; k++ {
-			model.Run(100)
+			model.Run(10000)
 			source.Next()
 			target.Next()
 		}

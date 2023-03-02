@@ -7,6 +7,8 @@ import (
 
 func Input(source core.Dataset) core.Layer {
 	layerSize := source.Size()
-	kernel := &kernels.StdpKernel{}
+	kernel := &kernels.InputKernel{
+		Dataset: source,
+	}
 	return Layer(layerSize, kernel)
 }

@@ -10,4 +10,5 @@ type Node interface {
 	Connect(node Node) Edge
 	AddDendrite(edge Edge)
 	AddSynapse(edge Edge)
+	GetSynapses() []Edge
 }

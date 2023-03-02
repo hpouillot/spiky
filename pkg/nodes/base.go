@@ -33,12 +33,7 @@ func (n *baseNode) Connect(target core.Node) core.Edge {
 }
 
 func (node *baseNode) Compute(time core.Time, queue *core.Queue) {
-	spiked := node.kernel.Compute(node, time)
-	if spiked {
-		for _, syn := range node.synapses {
-			queue.Add(time+core.Time(syn.GetDelay()), syn.GetTarget())
-		}
-	}
+	node.kernel.Compute(node, time, queue)
 }
 
 func (n *baseNode) GetSynapses() []core.Edge {

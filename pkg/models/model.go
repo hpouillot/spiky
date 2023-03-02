@@ -20,9 +20,10 @@ func (m *baseModel) Run(duration int) {
 		queue.Add(time, node)
 	})
 	for queue.GetCount() != 0 && time < end_time {
-		time, node := queue.PopMin()
-		node.Compute(time, queue)
-		fmt.Println(time)
+		newTime, newNode := queue.PopMin()
+		time = newTime
+		newNode.Compute(time, queue)
+		// fmt.Println(time, queue.GetCount())
 	}
 }
 
