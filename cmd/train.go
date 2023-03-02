@@ -47,10 +47,12 @@ var trainCmd = &cobra.Command{
 
 		defer monitor.Close()
 
-		for k := 0; k < 1000; k++ {
-			model.Run(1000)
+		for k := 0; k < 10000; k++ {
 			source.Next(true)
+			model.Run(500)
 			monitor.Render(k)
+			model.Reset()
+			// time.Sleep(200 * time.Millisecond)
 			if monitor.IsClosed() {
 				break
 			}

@@ -13,9 +13,9 @@ func (l *layer) GetNodes() []core.Node {
 	return l.nodes
 }
 
-func (l *layer) Visit(fn func(node core.Node)) {
-	for _, node := range l.nodes {
-		fn(node)
+func (l *layer) Visit(fn func(node core.Node, idx int)) {
+	for idx, node := range l.nodes {
+		fn(node, idx)
 	}
 }
 
@@ -24,8 +24,8 @@ func (l *layer) GetNode(idx int) core.Node {
 }
 
 func (l *layer) Reset() {
-	l.Visit(func(node core.Node) {
-		// node.SetSpike()
+	l.Visit(func(node core.Node, _ int) {
+		node.Reset()
 	})
 }
 

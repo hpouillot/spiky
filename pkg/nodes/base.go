@@ -8,7 +8,6 @@ import (
 
 type baseNode struct {
 	id        string
-	potential float64
 	position  core.Point
 	spikes    map[core.Time]bool
 
@@ -34,6 +33,10 @@ func (n *baseNode) Connect(target core.Node) core.Edge {
 
 func (node *baseNode) Compute(time core.Time, queue *core.Queue) {
 	node.kernel.Compute(node, time, queue)
+}
+
+func (n *baseNode) Reset() {
+	n.spikes = make(map[core.Time]bool)
 }
 
 func (n *baseNode) GetSynapses() []core.Edge {

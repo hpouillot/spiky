@@ -10,8 +10,7 @@ import (
 func Node(kernel core.Kernel) core.Node {
 	id, _ := nanoid.New()
 	node := baseNode{
-		id:        id,
-		potential: 0,
+		id: id,
 		position: core.Point{
 			X: rand.Float64(),
 			Y: rand.Float64(),

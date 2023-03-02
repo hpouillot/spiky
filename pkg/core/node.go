@@ -16,4 +16,5 @@ type Node interface {
 	GetChildren() []Node
 	GetLastSpikeTime() Time
 	GetSpikeTimes(startTime Time, endTime Time) []Time
+	Reset()
 }

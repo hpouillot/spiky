@@ -1,63 +1,94 @@
 package monitoring
 
 import (
-	"image"
 	"log"
 	"spiky/pkg/core"
 
-	ui "github.com/gizak/termui/v3"
+	"github.com/gdamore/tcell/v2"
 )
 
 type Monitor struct {
-	layer      core.Layer
-	isClosed   bool
-	termWidth  int
-	termHeight int
+	layer    core.Layer
+	isClosed bool
+	width    int
+	height   int
+	screen   tcell.Screen
 }
 
 func (m *Monitor) Create() {
-	if err := ui.Init(); err != nil {
-		log.Fatalf("failed to initialize termui: %v", err)
+	s, err := tcell.NewScreen()
+	if err != nil {
+		log.Fatalf("%+v", err)
 	}
-	termWidth, termHeight := ui.TerminalDimensions()
-	m.termHeight = termHeight
-	m.termWidth = termWidth
-	go func() {
-		for e := range ui.PollEvents() {
-			switch e.ID {
-			case "q", "<C-c>":
-				m.isClosed = true
-				return
-			case "<Resize>":
-				payload := e.Payload.(ui.Resize)
-				m.termHeight = payload.Height
-				m.termWidth = payload.Width
-				ui.Clear()
-				m.Render(0)
+	if err := s.Init(); err != nil {
+		log.Fatalf("%+v", err)
+	}
+	m.screen = s
+	// Set default text style
+	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
+	m.screen.SetStyle(defStyle)
+
+	// Clear screen
+	m.screen.Clear()
+	m.width, m.height = m.screen.Size()
+	go (func() {
+		for {
+			// Poll event
+			ev := s.PollEvent()
+
+			// Process event
+			switch ev := ev.(type) {
+			case *tcell.EventResize:
+				s.Sync()
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+					m.isClosed = true
+					return
+				} else if ev.Key() == tcell.KeyCtrlL {
+					s.Sync()
+				} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
+					s.Clear()
+				}
 			}
 		}
-	}()
+	})()
 }
 
 func (m *Monitor) Close() {
-	ui.Close()
+	maybePanic := recover()
+	m.screen.Fini()
+	if maybePanic != nil {
+		panic(maybePanic)
+	}
 }
 
 func (m *Monitor) IsClosed() bool {
 	return m.isClosed
 }
 
-func (m *Monitor) Render(step int) {
-	c := ui.NewCanvas()
-	c.SetRect(0, 0, m.termWidth, m.termHeight)
-	m.layer.Visit(func(node core.Node) {
+func (m *Monitor) DrawNodeLayout() {
+	pointStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
+	m.layer.Visit(func(node core.Node, idx int) {
 		position := node.GetPosition()
-		x := int(position.X * float64(m.termWidth))
-		y := int(position.Y * float64(m.termHeight))
-		point := image.Pt(x, y)
-		c.SetPoint(point, ui.ColorYellow)
+		x := int(position.X * float64(m.width))
+		y := int(position.Y * float64(m.height))
+		m.screen.SetContent(x, y, tcell.RuneBullet, nil, pointStyle)
 	})
-	ui.Render(c)
+}
+
+func (m *Monitor) DrawNodeSpikes() {
+	pointStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
+	m.layer.Visit(func(node core.Node, idx int) {
+		for _, time := range node.GetSpikeTimes(0, 1000) {
+			m.screen.SetContent(time.ToInt(), idx, tcell.RuneBullet, nil, pointStyle)
+		}
+	})
+}
+
+func (m *Monitor) Render(step int) {
+	m.screen.Clear()
+	m.DrawNodeSpikes()
+	m.screen.Show()
 }
 
 func NewMonitor(layer core.Layer) Monitor {
