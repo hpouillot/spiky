@@ -4,13 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"spiky/pkg/data"
-	"spiky/pkg/edges"
-	"spiky/pkg/layers"
-	"spiky/pkg/models"
+	"log"
 
 	"github.com/spf13/cobra"
+
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 )
 
 // trainCmd represents the train command
@@ -18,36 +17,52 @@ var trainCmd = &cobra.Command{
 	Use:   "train",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		source := data.Text([]string{
-			"1",
-			"2",
-			"3",
-			"4",
-			"5",
-			"6",
-		}) // Sized, Localized dataset ?
-		target := data.Text([]string{
-			"Y",
-			"N",
-			"Y",
-			"N",
-			"Y",
-			"N",
-		})
+		// source := data.Text([]string{
+		// 	"1",
+		// 	"2",
+		// 	"3",
+		// 	"4",
+		// 	"5",
+		// 	"6",
+		// }) // Sized, Localized dataset ?
+		// target := data.Text([]string{
+		// 	"Y",
+		// 	"N",
+		// 	"Y",
+		// 	"N",
+		// 	"Y",
+		// 	"N",
+		// })
 
-		input := layers.Input(source)
-		output := layers.Output(target)
+		// input := layers.Input(source)
+		// output := layers.Output(target)
 
-		edges.Dense(input, output, 0.5)
+		// edges.Dense(input, output, 0.5)
 
-		model := models.Model(input, output)
+		// model := models.Model(input, output)
 
-		for k := 0; k < 5; k++ {
-			model.Run(10000)
-			source.Next()
-			target.Next()
+		// for k := 0; k < 5; k++ {
+		// 	model.Run(10000)
+		// 	source.Next()
+		// 	target.Next()
+		// }
+
+		if err := ui.Init(); err != nil {
+			log.Fatalf("failed to initialize termui: %v", err)
 		}
-		fmt.Println("train called")
+		defer ui.Close()
+
+		p := widgets.NewParagraph()
+		p.Text = "Hello World!"
+		p.SetRect(0, 0, 25, 5)
+
+		ui.Render(p)
+
+		for e := range ui.PollEvents() {
+			if e.Type == ui.KeyboardEvent {
+				break
+			}
+		}
 	},
 }
 
