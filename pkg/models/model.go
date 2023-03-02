@@ -1,46 +1,38 @@
 package models
 
 import (
+	"fmt"
 	"spiky/pkg/core"
 )
 
-func New[I interface{}, O interface{}](input core.Codec[I], output core.Codec[O], size int) core.Model {
-	// input_size := input.Size()
-	// output_size := output.Size()
-	// hidden_size := size
-	// total_size := input_size + output_size + hidden_size
-	// all_nodes := make([]*core.Node, total_size)
+type baseModel struct {
+	input  core.Layer
+	output core.Layer
+}
 
-	// input_nodes := make([]*core.Node, input_size)
-	// for i := 0; i < input_size; i++ {
-	// 	node := &core.Node{}
-	// 	input_nodes[i] = node
-	// 	all_nodes[i] = node
-	// }
+// Single sample run
+func (m *baseModel) Run(duration int) {
+	fmt.Println(duration, "============")
+	queue := core.NewQueue()
+	time := core.Time(0)
+	end_time := core.Time(duration)
+	m.input.Visit(func(node core.Node) {
+		queue.Add(time, node)
+	})
+	for queue.GetCount() != 0 && time < end_time {
+		time, node := queue.PopMin()
+		node.Compute(time, queue)
+		fmt.Println(time)
+	}
+}
 
-	// output_nodes := make([]*core.Node, output_size)
-	// for i := 0; i < output_size; i++ {
-	// 	node := &core.Node{}
-	// 	output_nodes[i] = &core.Node{}
-	// 	all_nodes[input_size+i] = node
-	// }
+func (m *baseModel) Train(duration int) {
 
-	// input_interface := core.ModelInterface[I]{
-	// 	Codec: input,
-	// 	Nodes: input_nodes,
-	// }
+}
 
-	// output_interface := core.ModelInterface[O]{
-	// 	Codec: output,
-	// 	Nodes: output_nodes,
-	// }
-
-	// kernel := kernels.StdpKernel{}
-
-	// return core.Model[I, O]{
-	// 	Input:  input_interface,
-	// 	Output: output_interface,
-	// 	Kernel: &kernel,
-	// }
-	return core.Model{}
+func Model(input core.Layer, output core.Layer) core.Model {
+	return &baseModel{
+		input:  input,
+		output: output,
+	}
 }

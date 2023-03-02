@@ -26,7 +26,7 @@ func (cc CategoryCodec) Size() int {
 func (cc CategoryCodec) Encode(data []int, nodes []core.Node) error {
 	nodesLen := len(nodes)
 	if nodesLen != cc.Size() {
-		return errors.New("Invalid nodes size")
+		return errors.New("invalid nodes size")
 	}
 	// for idx, value := range data {
 	// if value > cc.size {

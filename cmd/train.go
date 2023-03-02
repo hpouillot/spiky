@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
-	"spiky/pkg/codec"
+	"spiky/pkg/edges"
+	"spiky/pkg/env"
+	"spiky/pkg/layers"
 	"spiky/pkg/models"
 
 	"github.com/spf13/cobra"
@@ -16,9 +18,35 @@ var trainCmd = &cobra.Command{
 	Use:   "train",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		stringCodec := codec.StringCodec{}
-		m := models.New[string, string](stringCodec, stringCodec, 10)
-		m.Run(100)
+		source := env.Text([]string{
+			"1",
+			"2",
+			"3",
+			"4",
+			"5",
+			"6",
+		}) // Sized, Localized dataset ?
+		target := env.Text([]string{
+			"Y",
+			"N",
+			"Y",
+			"N",
+			"Y",
+			"N",
+		})
+
+		input := layers.Input(source)
+		output := layers.Output(target)
+
+		edges.Dense(input, output, 0.5)
+
+		model := models.Model(input, output)
+
+		for k := 0; k < 5; k++ {
+			model.Run(100)
+			source.Next()
+			target.Next()
+		}
 		fmt.Println("train called")
 	},
 }
