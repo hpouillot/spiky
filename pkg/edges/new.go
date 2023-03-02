@@ -1,6 +1,9 @@
 package edges
 
-import "spiky/pkg/core"
+import (
+	"math/rand"
+	"spiky/pkg/core"
+)
 
 type baseEdge struct {
 	source core.Node
@@ -26,7 +29,7 @@ func New(source core.Node, target core.Node) core.Edge {
 	return &baseEdge{
 		source: source,
 		target: target,
-		weight: 0.0,
+		weight: rand.Float64() * 100,
 		delay:  1,
 	}
 }

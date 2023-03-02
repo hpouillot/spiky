@@ -11,4 +11,9 @@ type Node interface {
 	AddDendrite(edge Edge)
 	AddSynapse(edge Edge)
 	GetSynapses() []Edge
+	GetDendrites() []Edge
+	GetParents() []Node
+	GetChildren() []Node
+	GetLastSpikeTime() Time
+	GetSpikeTimes(startTime Time, endTime Time) []Time
 }

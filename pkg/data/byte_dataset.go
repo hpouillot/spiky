@@ -28,8 +28,12 @@ func (bd *byteDataset) Get(position core.Point, time core.Time) bool {
 	}
 }
 
-func (bd *byteDataset) Next() {
-	bd.cursor += 1
+func (bd *byteDataset) Next(cycle bool) {
+	if cycle && bd.cursor == len(bd.samples)-1 {
+		bd.cursor = 0
+	} else {
+		bd.cursor += 1
+	}
 	values := bd.samples[bd.cursor]
 	for idx, value := range values {
 		src := rand.New(rand.NewSource(1))

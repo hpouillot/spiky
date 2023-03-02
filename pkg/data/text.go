@@ -20,6 +20,6 @@ func Text(samples []string) core.Dataset {
 		size:          maxLength,
 		distributions: make([]distuv.Bernoulli, maxLength),
 	}
-	dataset.Next()
+	dataset.Next(true)
 	return &dataset
 }

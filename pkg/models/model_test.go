@@ -4,6 +4,7 @@ import (
 	"spiky/pkg/core"
 	"spiky/pkg/data"
 	"spiky/pkg/edges"
+	"spiky/pkg/kernels"
 	"spiky/pkg/layers"
 	"testing"
 )
@@ -23,33 +24,29 @@ func (mk *MockedKernel) Update(node *core.Node, time core.Time) {
 
 func TestModelInstantiation(t *testing.T) {
 	source := data.Text([]string{
-		"1",
+		"🦾",
 		"2",
 		"3",
 		"4",
 		"5",
 		"6",
 	}) // Sized, Localized dataset ?
-	target := data.Text([]string{
-		"Y",
-		"N",
-		"Y",
-		"N",
-		"Y",
-		"N",
-	})
+
+	kernel := kernels.StdpKernel{
+		Threshold: 250.0,
+		Tho:       10,
+	}
 
 	input := layers.Input(source)
-	output := layers.Output(target)
+	hidden := layers.Layer(100, &kernel)
 
-	edges.Dense(input, output, 0.5)
+	edges.Dense(input, hidden, 1.0)
 
-	model := Model(input, output)
+	model := Model(input, hidden)
 
 	for k := 0; k < 5; k++ {
 		model.Run(100)
-		source.Next()
-		target.Next()
+		source.Next(true)
 	}
 }
 

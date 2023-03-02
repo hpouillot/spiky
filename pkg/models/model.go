@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"spiky/pkg/core"
 )
 
@@ -12,7 +11,6 @@ type baseModel struct {
 
 // Single sample run
 func (m *baseModel) Run(duration int) {
-	fmt.Println(duration, "============")
 	queue := core.NewQueue()
 	time := core.Time(0)
 	end_time := core.Time(duration)
@@ -23,7 +21,6 @@ func (m *baseModel) Run(duration int) {
 		newTime, newNode := queue.PopMin()
 		time = newTime
 		newNode.Compute(time, queue)
-		// fmt.Println(time, queue.GetCount())
 	}
 }
 

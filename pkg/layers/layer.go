@@ -25,7 +25,7 @@ func (l *layer) GetNode(idx int) core.Node {
 
 func (l *layer) Reset() {
 	l.Visit(func(node core.Node) {
-
+		// node.SetSpike()
 	})
 }
 

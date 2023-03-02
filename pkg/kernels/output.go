@@ -7,10 +7,7 @@ type OutputKernel struct {
 }
 
 func (k *OutputKernel) Compute(node core.Node, time core.Time, queue *core.Queue) {
-	spiked := k.Dataset.Get(node.GetPosition(), time)
-	if spiked {
-		node.SetSpike(time, true)
-	}
+	
 }
 
 func (k *OutputKernel) Update(node core.Node, time core.Time) {
