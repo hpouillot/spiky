@@ -2,6 +2,7 @@ package models
 
 import (
 	"spiky/pkg/core"
+	"spiky/pkg/utils"
 )
 
 type baseModel struct {
@@ -11,14 +12,14 @@ type baseModel struct {
 
 // Single sample run
 func (m *baseModel) Run(duration int) {
-	queue := core.NewQueue()
+	queue := utils.NewQueue()
 	time := core.Time(0)
 	end_time := core.Time(duration)
 	m.input.Visit(func(node core.Node, _ int) {
 		queue.Add(time, node)
 	})
-	for queue.GetCount() != 0 && time < end_time {
-		newTime, newNode := queue.PopMin()
+	for queue.Count() != 0 && time < end_time {
+		newTime, newNode := queue.Pop()
 		time = newTime
 		newNode.Compute(time, queue)
 	}

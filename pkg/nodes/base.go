@@ -2,14 +2,15 @@ package nodes
 
 import (
 	"errors"
+	"math/rand"
 	"spiky/pkg/core"
 	"spiky/pkg/edges"
 )
 
 type baseNode struct {
-	id        string
-	position  core.Point
-	spikes    map[core.Time]bool
+	id       string
+	position core.Point
+	spikes   map[core.Time]bool
 
 	kernel    core.Kernel
 	synapses  []core.Edge
@@ -24,14 +25,15 @@ func (n *baseNode) GetPosition() core.Point {
 	return n.position
 }
 
-func (n *baseNode) Connect(target core.Node) core.Edge {
-	edge := edges.New(n, target)
-	n.AddSynapse(edge)
-	target.AddDendrite(edge)
+func (n *baseNode) AddParent(parent core.Node) core.Edge {
+	edge := edges.New(parent, n)
+	edge.UpdateWeight(rand.Float64() * n.kernel.GetMaxWeight())
+	parent.AddSynapse(edge)
+	n.AddDendrite(edge)
 	return edge
 }
 
-func (node *baseNode) Compute(time core.Time, queue *core.Queue) {
+func (node *baseNode) Compute(time core.Time, queue core.Queue) {
 	node.kernel.Compute(node, time, queue)
 }
 

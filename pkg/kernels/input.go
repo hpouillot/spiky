@@ -6,7 +6,11 @@ type InputKernel struct {
 	Dataset core.Dataset
 }
 
-func (k *InputKernel) Compute(node core.Node, time core.Time, queue *core.Queue) {
+func (m *InputKernel) GetMaxWeight() float64 {
+	return 0
+}
+
+func (k *InputKernel) Compute(node core.Node, time core.Time, queue core.Queue) {
 	spiked := k.Dataset.Get(node.GetPosition(), time)
 	if spiked {
 		node.SetSpike(time, true)
@@ -14,7 +18,7 @@ func (k *InputKernel) Compute(node core.Node, time core.Time, queue *core.Queue)
 			queue.Add(time+core.Time(syn.GetDelay()), syn.GetTarget())
 		}
 	}
-	queue.Add(time+1, node)
+	queue.Add(time+2, node)
 }
 
 func (k *InputKernel) Update(node core.Node, time core.Time) {

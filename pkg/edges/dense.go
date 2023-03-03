@@ -14,7 +14,7 @@ func Dense(inputLayer core.Layer, outputLayer core.Layer, proba float64) {
 	inputLayer.Visit(func(source core.Node, idx int) {
 		outputLayer.Visit(func(target core.Node, idx int) {
 			if distrib.Rand() == 1 {
-				source.Connect(target)
+				target.AddParent(source)
 			}
 		})
 	})

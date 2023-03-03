@@ -10,6 +10,7 @@ import (
 	"spiky/pkg/layers"
 	"spiky/pkg/models"
 	"spiky/pkg/monitoring"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -20,39 +21,38 @@ var trainCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		source := data.Text([]string{
-			"0",
-			"1",
-			"2",
-			"3",
-			"4",
-			"5",
-			"6",
-			"7",
-			"8",
-			"9",
+			"Hello this is a sentence",
+			"Coucou momo",
 		}) // Sized, Localized dataset ?
+
 		kernel := kernels.StdpKernel{
-			Threshold: 250.0,
-			Tho:       10,
+			Threshold:    250.0,
+			Tho:          50,
+			LearningRate: 0.1,
+			MaxWeight:    250.0,
 		}
 
 		input := layers.Input(source)
-		layer := layers.Layer(500, &kernel)
+		layer1 := layers.Layer(100, &kernel)
+		// layer2 := layers.Layer(10, &kernel)
 
-		edges.Dense(input, layer, 1.0)
+		edges.Dense(input, layer1, 1.0)
+		// edges.Dense(layer1, layer1, 0.1)
 
-		model := models.Model(input, layer)
-		monitor := monitoring.NewMonitor(layer)
+		model := models.Model(input, layer1)
+		monitor := monitoring.NewMonitor(layer1)
 		monitor.Create()
 
 		defer monitor.Close()
 
-		for k := 0; k < 10000; k++ {
+		iteration := 300
+		runDuration := 1000
+		for k := 0; k < iteration; k++ {
 			source.Next(true)
-			model.Run(500)
-			monitor.Render(k)
+			model.Run(runDuration)
+			monitor.Render(runDuration)
 			model.Reset()
-			// time.Sleep(200 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 			if monitor.IsClosed() {
 				break
 			}

@@ -76,18 +76,21 @@ func (m *Monitor) DrawNodeLayout() {
 	})
 }
 
-func (m *Monitor) DrawNodeSpikes() {
+func (m *Monitor) DrawNodeSpikes(duration int) {
 	pointStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
+	nodeSize := m.layer.Size()
 	m.layer.Visit(func(node core.Node, idx int) {
-		for _, time := range node.GetSpikeTimes(0, 1000) {
-			m.screen.SetContent(time.ToInt(), idx, tcell.RuneBullet, nil, pointStyle)
+		for _, time := range node.GetSpikeTimes(0, core.Time(duration)) {
+			x := int((float64(time.ToInt()) / float64(duration)) * float64(m.width))
+			y := int((float64(idx) / float64(nodeSize)) * float64(m.height))
+			m.screen.SetContent(x, y, tcell.RuneBullet, nil, pointStyle)
 		}
 	})
 }
 
-func (m *Monitor) Render(step int) {
+func (m *Monitor) Render(duration int) {
 	m.screen.Clear()
-	m.DrawNodeSpikes()
+	m.DrawNodeSpikes(duration)
 	m.screen.Show()
 }
 
