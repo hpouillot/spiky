@@ -91,11 +91,11 @@ func (n *baseNode) AddSynapse(edge core.Edge) {
 }
 
 func (n *baseNode) AddDendrite(edge core.Edge) {
-	n.dendrites = append(n.synapses, edge)
+	n.dendrites = append(n.dendrites, edge)
 }
 
 func (n *baseNode) GetLastSpikeTime() core.Time {
-	var maxSpikeTime core.Time = 0
+	var maxSpikeTime core.Time = -10.0
 	for k := range n.spikes {
 		if k > maxSpikeTime {
 			maxSpikeTime = k

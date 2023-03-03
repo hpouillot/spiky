@@ -1,8 +1,8 @@
 package core
 
 type Model interface {
-	Train(duration int)
-	Run(duration int)
+	Train(duration Time)
+	Run(duration Time)
 	Reset()
 	Visit(func(node Node, idx int))
 }

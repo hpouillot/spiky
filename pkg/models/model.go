@@ -11,21 +11,21 @@ type baseModel struct {
 }
 
 // Single sample run
-func (m *baseModel) Run(duration int) {
+func (m *baseModel) Run(duration core.Time) {
 	queue := utils.NewQueue()
 	time := core.Time(0)
-	end_time := core.Time(duration)
 	m.input.Visit(func(node core.Node, _ int) {
 		queue.Add(time, node)
 	})
-	for queue.Count() != 0 && time < end_time {
+	for queue.Count() != 0 && time < duration {
 		newTime, newNode := queue.Pop()
 		time = newTime
+		// fmt.Println(time)
 		newNode.Compute(time, queue)
 	}
 }
 
-func (m *baseModel) Train(duration int) {
+func (m *baseModel) Train(duration core.Time) {
 
 }
 

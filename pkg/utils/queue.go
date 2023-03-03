@@ -13,7 +13,7 @@ type Queue struct {
 
 func (q *Queue) Add(time core.Time, node core.Node) {
 	str, _ := nanoid.New()
-	q.orderedSet.AddOrUpdate(str, sortedset.SCORE(time), node)
+	q.orderedSet.AddOrUpdate(str, sortedset.SCORE(time*100000), node)
 }
 
 func (q *Queue) Count() int {
@@ -22,7 +22,7 @@ func (q *Queue) Count() int {
 
 func (q *Queue) Pop() (core.Time, core.Node) {
 	item := q.orderedSet.PopMin()
-	return core.Time(item.Score()), item.Value.(core.Node)
+	return core.Time(float64(item.Score()) / 100000.0), item.Value.(core.Node)
 }
 
 func NewQueue() *Queue {
