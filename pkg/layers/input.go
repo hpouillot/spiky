@@ -5,10 +5,11 @@ import (
 	"spiky/pkg/kernels"
 )
 
-func Input(source core.Dataset) core.Layer {
+func Input(source core.Dataset, period core.Time) core.Layer {
 	layerSize := source.Shape()
 	kernel := &kernels.InputKernel{
 		Dataset: source,
+		Period:  period,
 	}
 	return Layer(layerSize[0], kernel)
 }

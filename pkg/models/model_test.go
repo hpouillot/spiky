@@ -35,12 +35,13 @@ func TestModelInstantiation(t *testing.T) {
 	kernel := kernels.StdpKernel{
 		Threshold: 250.0,
 		Tho:       10,
+		MaxWeight: 20,
 	}
 
-	input := layers.Input(source)
+	input := layers.Input(source, 2)
 	hidden := layers.Layer(100, &kernel)
 
-	edges.Dense(input, hidden, 1.0)
+	edges.Dense(input, hidden, 1.0, kernel.MaxWeight, 2.0)
 
 	model := Model(input, hidden)
 

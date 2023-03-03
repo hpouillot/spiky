@@ -12,6 +12,7 @@ type StdpKernel struct {
 	MaxWeight      float64
 	RefractoryTime core.Time
 	TraceTarget    float64
+	MaxDelay       float64
 }
 
 func (m *StdpKernel) GetMaxWeight() float64 {
@@ -46,9 +47,14 @@ func (m *StdpKernel) Compute(node core.Node, time core.Time, queue core.Queue) {
 			queue.Add(time+core.Time(syn.GetDelay()), syn.GetTarget())
 		}
 		for _, dendrite := range node.GetDendrites() {
-			contrib := m.GetContrib(dendrite.GetSource(), 0, time)
-			deltaW := m.LearningRate * (contrib - m.TraceTarget) * (m.MaxWeight - dendrite.GetWeight())
-			dendrite.UpdateWeight(deltaW)
+			weight := dendrite.GetWeight()
+			contrib := m.GetContrib(dendrite.GetSource(), startTime, time)
+			deltaW := m.LearningRate * (contrib - m.TraceTarget)
+			if deltaW > 0 {
+				dendrite.SetWeight(weight + deltaW*(m.MaxWeight-dendrite.GetWeight()))
+			} else if deltaW < 0 {
+				dendrite.SetWeight(weight + deltaW*dendrite.GetWeight())
+			}
 		}
 	}
 }

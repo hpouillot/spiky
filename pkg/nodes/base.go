@@ -2,9 +2,7 @@ package nodes
 
 import (
 	"errors"
-	"math/rand"
 	"spiky/pkg/core"
-	"spiky/pkg/edges"
 )
 
 type baseNode struct {
@@ -23,14 +21,6 @@ func (n *baseNode) GetId() string {
 
 func (n *baseNode) GetPosition() core.Point {
 	return n.position
-}
-
-func (n *baseNode) AddParent(parent core.Node) core.Edge {
-	edge := edges.New(parent, n)
-	edge.UpdateWeight(rand.Float64() * n.kernel.GetMaxWeight())
-	parent.AddSynapse(edge)
-	n.AddDendrite(edge)
-	return edge
 }
 
 func (node *baseNode) Compute(time core.Time, queue core.Queue) {

@@ -4,6 +4,7 @@ import "spiky/pkg/core"
 
 type InputKernel struct {
 	Dataset core.Dataset
+	Period  core.Time
 }
 
 func (m *InputKernel) GetMaxWeight() float64 {
@@ -18,7 +19,7 @@ func (k *InputKernel) Compute(node core.Node, time core.Time, queue core.Queue) 
 			queue.Add(time+core.Time(syn.GetDelay()), syn.GetTarget())
 		}
 	}
-	queue.Add(time+2, node)
+	queue.Add(time+k.Period, node)
 }
 
 func (k *InputKernel) Update(node core.Node, time core.Time) {

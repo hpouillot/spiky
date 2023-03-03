@@ -5,5 +5,5 @@ type Edge interface {
 	GetSource() Node
 	GetDelay() float64
 	GetWeight() float64
-	UpdateWeight(deltaW float64) float64
+	SetWeight(deltaW float64) float64
 }

@@ -7,7 +7,6 @@ type Node interface {
 	GetSpike(time Time) bool
 	GetPosition() Point
 	GetSpikeRate(startTime Time, endTime Time) (float64, error)
-	AddParent(parent Node) Edge
 	AddDendrite(edge Edge)
 	AddSynapse(edge Edge)
 	GetSynapses() []Edge

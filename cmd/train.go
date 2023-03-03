@@ -22,41 +22,47 @@ var trainCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		source := data.Text([]string{
-			"Hello this is a sentence",
-			"Coucou momo",
+			"0",
+			"1",
+			"2",
+			"3",
+			"4",
 		}) // Sized, Localized dataset ?
 
 		kernel := kernels.StdpKernel{
 			Threshold:      200.0,
 			Tho:            20,
-			LearningRate:   0.0001,
+			LearningRate:   0.1,
 			MaxWeight:      200.0,
 			RefractoryTime: 1.0,
-			TraceTarget:    0.5,
+			TraceTarget:    1,
+			MaxDelay:       2.0,
 		}
 
-		input := layers.Input(source)
-		layer1 := layers.Layer(50, &kernel)
-		layer2 := layers.Layer(50, &kernel)
+		input := layers.Input(source, 1)
+		layer1 := layers.Layer(10, &kernel)
+		layer2 := layers.Layer(5, &kernel)
+		// layer2 := layers.Layer(50, &kernel)
 
-		edges.Dense(input, layer1, 1.0)
-		// edges.Dense(layer1, layer1, 0.2)
-		edges.Dense(layer1, layer2, 1.0)
+		edges.Dense(input, layer1, 1.0, kernel.MaxWeight, kernel.MaxDelay)
+		// edges.Bidirectional(layer1, 1.0, kernel.MaxWeight, kernel.MaxDelay)
+		edges.Dense(layer1, layer2, 1.0, kernel.MaxWeight, kernel.MaxDelay)
+		// edges.Bidirectional(layer2, 1.0, kernel.MaxWeight, kernel.MaxDelay)
 
-		model := models.Model(input, layer2)
-		monitor := monitoring.NewMonitor(layer2)
+		model := models.Model(input, layer1)
+		monitor := monitoring.NewMonitor(input)
 		monitor.Create()
 
 		defer monitor.Close()
 
 		iteration := 1000
-		runDuration := core.Time(20.0)
+		runDuration := core.Time(100.0)
 		for k := 0; k < iteration; k++ {
 			source.Next(true)
 			model.Run(runDuration)
 			monitor.Render(runDuration)
 			model.Reset()
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 			if monitor.IsClosed() {
 				break
 			}

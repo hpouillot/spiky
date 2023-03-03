@@ -72,7 +72,7 @@ func (m *Monitor) DrawNodeLayout() {
 		position := node.GetPosition()
 		x := int(position.X * float64(m.width))
 		y := int(position.Y * float64(m.height))
-		m.screen.SetContent(x, y, tcell.RuneBullet, nil, pointStyle)
+		m.screen.SetContent(x, y, tcell.RuneBlock, nil, pointStyle)
 	})
 }
 
@@ -83,7 +83,7 @@ func (m *Monitor) DrawNodeSpikes(duration core.Time) {
 		for _, time := range node.GetSpikeTimes(0, duration) {
 			x := int((time.ToFloat() / duration.ToFloat()) * float64(m.width))
 			y := int((float64(idx) / float64(nodeSize)) * float64(m.height))
-			m.screen.SetContent(x, y, tcell.RuneBullet, nil, pointStyle)
+			m.screen.SetContent(x, y, tcell.RuneBlock, nil, pointStyle)
 		}
 	})
 }
