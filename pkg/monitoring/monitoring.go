@@ -8,7 +8,7 @@ import (
 )
 
 type Monitor struct {
-	layer    core.Layer
+	layer    core.Box[core.Neuron]
 	isClosed bool
 	width    int
 	height   int
@@ -66,37 +66,28 @@ func (m *Monitor) IsClosed() bool {
 	return m.isClosed
 }
 
-func (m *Monitor) DrawNodeLayout() {
-	pointStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
-	m.layer.Visit(func(node core.Node, idx int) {
-		position := node.GetPosition()
-		x := int(position.X * float64(m.width))
-		y := int(position.Y * float64(m.height))
-		m.screen.SetContent(x, y, tcell.RuneBlock, nil, pointStyle)
-	})
-}
-
-func (m *Monitor) DrawNodeSpikes(duration core.Time) {
+func (m *Monitor) DrawNodeSpikes(duration float64) {
 	pointStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
 	nodeSize := m.layer.Size()
-	m.layer.Visit(func(node core.Node, idx int) {
-		for _, time := range node.GetSpikeTimes(0, duration) {
-			x := int((time.ToFloat() / duration.ToFloat()) * float64(m.width))
+	m.layer.Visit(func(idx int, node *core.Neuron) {
+		for _, time := range (*node.GetSpikes())[0:int(duration)] {
+			x := int((time / duration) * float64(m.width))
 			y := int((float64(idx) / float64(nodeSize)) * float64(m.height))
 			m.screen.SetContent(x, y, tcell.RuneBlock, nil, pointStyle)
 		}
 	})
 }
 
-func (m *Monitor) Render(duration core.Time) {
+func (m *Monitor) Render(duration float64) {
 	m.screen.Clear()
 	m.DrawNodeSpikes(duration)
 	m.screen.Show()
 }
 
-func NewMonitor(layer core.Layer) Monitor {
-	return Monitor{
+func NewMonitor(layer core.Box[core.Neuron]) Monitor {
+	monitor := Monitor{
 		layer:    layer,
 		isClosed: false,
 	}
+	return monitor
 }

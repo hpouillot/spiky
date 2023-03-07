@@ -1,22 +1,13 @@
 package core
 
-type MockedCodec struct {
-	encodeCallCount int
-	decodeCallCount int
-	sizeCallCount   int
-}
+import (
+	"testing"
+)
 
-func (mc *MockedCodec) Encode(data string, nodes []*Node) error {
-	mc.encodeCallCount++
-	return nil
-}
-
-func (mc *MockedCodec) Decode(nodes []*Node) (string, error) {
-	mc.decodeCallCount++
-	return "mocked", nil
-}
-
-func (mc *MockedCodec) Size() int {
-	mc.sizeCallCount++
-	return 10
+func TestNewRateCodec(t *testing.T) {
+	codec := NewRateCodec(3)
+	spikes := codec.Encode(255)
+	if len(spikes) < 5 {
+		t.Error("Invalid spike count")
+	}
 }
