@@ -5,11 +5,10 @@ import (
 )
 
 type Neuron struct {
-	potential         float64
-	refrectory_period float64
-	spikes            []float64
-	synapses          []*Edge
-	dendrites         []*Edge
+	potential float64
+	spikes    []float64
+	synapses  []*Edge
+	dendrites []*Edge
 }
 
 func (node *Neuron) GetSpikes() *[]float64 {
