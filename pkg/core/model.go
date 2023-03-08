@@ -4,15 +4,6 @@ import (
 	"spiky/pkg/utils"
 )
 
-type Point interface {
-	Coord() []uint64
-	Shape() []uint64
-}
-
-type Connector interface {
-	Connect(source Box[Neuron], target Box[Neuron])
-}
-
 type Model[I interface{}, O interface{}] interface {
 	GetInput() Box[Neuron]
 	GetOutput() Box[Neuron]
@@ -23,15 +14,15 @@ type SampleModel struct {
 	input  Box[Neuron]
 	output Box[Neuron]
 	codec  Codec
-	stack  *utils.TimeStack
+	world  *World
 }
 
-func NewSampleModel(codec Codec, input Box[Neuron], output Box[Neuron]) SampleModel {
+func NewSampleModel(codec Codec, input Box[Neuron], output Box[Neuron], constants *utils.Constants) SampleModel {
 	return SampleModel{
 		input:  input,
 		output: output,
 		codec:  codec,
-		stack:  utils.NewTimeStack(),
+		world:  NewWorld(constants),
 	}
 }
 
@@ -52,10 +43,11 @@ func (model *SampleModel) Predict(x []byte, duration float64) []byte {
 		value := x[idx]
 		spikes := model.codec.Encode(value)
 		for _, time := range spikes {
-			model.stack.Push(time, node.Fire)
+			model.world.Schedule(time, node.Fire)
 		}
 	})
-	model.stack.Resolve(0, duration)
+	for model.world.Next(duration) {
+	}
 	output := model.GetOutput()
 	y := make([]byte, output.Size())
 	output.Visit(func(idx int, node *Neuron) {

@@ -1,11 +1,15 @@
 package core
 
-import "testing"
+import (
+	"spiky/pkg/utils"
+	"testing"
+)
 
 func TestEdgeCreation(t *testing.T) {
-	source := NewNeuron(10, 0)
-	target := NewNeuron(10, 0)
-	NewEdge(source, target)
+	source := NewNeuron()
+	target := NewNeuron()
+	csts := utils.NewDefaultConstants()
+	NewEdge(source, target, csts)
 	if len(source.synapses) != 1 {
 		t.Error("Invalid synapses count")
 	}

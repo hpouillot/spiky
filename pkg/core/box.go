@@ -26,7 +26,7 @@ func (nb *Layer) Size() int {
 func NewLayer(size int) *Layer {
 	neurons := make([]*Neuron, size)
 	for i := 0; i < size; i++ {
-		neurons[i] = NewNeuron(255.0, 0.1)
+		neurons[i] = NewNeuron()
 	}
 	return &Layer{
 		neurons: neurons,

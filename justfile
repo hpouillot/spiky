@@ -1,5 +1,5 @@
 test:
-    go test -json -v spiky/pkg/models | gotestfmt
+    go test -json -v ./... | gotestfmt
 
 install:
     go install

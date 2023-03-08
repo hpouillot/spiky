@@ -3,19 +3,15 @@ package utils
 import "testing"
 
 func TestCallStack(t *testing.T) {
-	items := []int32{}
-	stack := NewTimeStack()
-	stack.Push(0.0, Process(func(s *TimeStack) {
-		items = append(items, 20)
-		s.Push(1.1, Process(func(stack *TimeStack) {
-			items = append(items, 30)
-		}))
-	}))
-	stack.Resolve(0, 3)
-	if len(items) != 2 {
-		t.Error("Invalid items size {}", len(items))
+	stack := NewTimeStack[int]()
+	stack.Push(0.0, 23)
+	if stack.Len() != 1 {
+		t.Errorf("Invalid stack length %v", stack.Len())
 	}
-	if items[0] != 20 || items[1] != 30 {
-		t.Error("Invalid elements")
+	if stack.Pop() == nil {
+		t.Error("Invalid item 1")
+	}
+	if stack.Pop() != nil {
+		t.Error("Invalid item 2")
 	}
 }

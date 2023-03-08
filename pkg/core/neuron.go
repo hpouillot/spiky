@@ -1,12 +1,11 @@
 package core
 
 import (
-	"spiky/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type Neuron struct {
 	potential         float64
-	threshold         float64
 	refrectory_period float64
 	spikes            []float64
 	synapses          []*Edge
@@ -21,24 +20,23 @@ func (node *Neuron) GetLastSpikeTime() float64 {
 	return node.spikes[len(node.spikes)-1]
 }
 
-func (node *Neuron) Fire(stack *utils.TimeStack) {
-	node.spikes = append(node.spikes, stack.GetTime())
+func (node *Neuron) Fire(world *World) {
+	node.spikes = append(node.spikes, world.GetTime())
+	logrus.Info("node fired")
 	for _, syn := range node.synapses {
-		syn.Forward(stack)
+		syn.Forward(world)
 	}
-	// for _, dend := range node.dendrites {
-	// 	stack.Push(stack.Delay(node.refrectory_period), dend.Backward)
-	// }
+	for _, dend := range node.dendrites {
+		world.Schedule(world.GetTime()+world.Const.RefractoryPeriod, dend.Backward)
+	}
 	node.potential = 0
 }
 
-func NewNeuron(threshold float64, refractoryPeriod float64) *Neuron {
+func NewNeuron() *Neuron {
 	return &Neuron{
-		potential:         0.0,
-		threshold:         threshold,
-		refrectory_period: refractoryPeriod,
-		spikes:            []float64{},
-		synapses:          []*Edge{},
-		dendrites:         []*Edge{},
+		potential: 0.0,
+		spikes:    []float64{},
+		synapses:  []*Edge{},
+		dendrites: []*Edge{},
 	}
 }

@@ -2,53 +2,46 @@ package core
 
 import (
 	"math"
+	"math/rand"
 	"spiky/pkg/utils"
 )
 
 type Edge struct {
-	weight       float64
-	delay        float64
-	target       *Neuron
-	source       *Neuron
-	tho          float64
-	maxWeight    float64
-	minWeight    float64
-	learningRate float64
+	weight float64
+	delay  float64
+	target *Neuron
+	source *Neuron
 }
 
-func (edge *Edge) Forward(stack *utils.TimeStack) {
-	stack.Push(stack.Delay(edge.delay), func(stack *utils.TimeStack) {
+func (edge *Edge) Forward(world *World) {
+	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
 		target := edge.target
 		target.potential += edge.weight
-		if target.potential >= target.threshold {
-			target.Fire(stack)
+		if target.potential >= world.Const.Threshold {
+			target.Fire(world)
 		}
 	})
 }
 
-func (edge *Edge) Backward(stack *utils.TimeStack) {
+func (edge *Edge) Backward(world *World) {
 	preSpike := edge.source.GetLastSpikeTime()
 	postSpike := edge.target.GetLastSpikeTime()
 	deltaT := postSpike - preSpike
 	Ap := 10.0
 	Am := 5.0
 	if deltaT >= 0 {
-		edge.weight += Ap * edge.learningRate * math.Exp(-deltaT/edge.tho) * (edge.maxWeight - edge.weight)
+		edge.weight += Ap * world.Const.LearningRate * math.Exp(-deltaT/world.Const.Tho) * (world.Const.MaxWeight - edge.weight)
 	} else {
-		edge.weight -= Am * edge.learningRate * math.Exp(deltaT/edge.tho) * (edge.weight - edge.minWeight)
+		edge.weight -= Am * world.Const.LearningRate * math.Exp(deltaT/world.Const.Tho) * (edge.weight - world.Const.MinWeight)
 	}
 }
 
-func NewEdge(source *Neuron, target *Neuron) *Edge {
+func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {
 	edge := &Edge{
-		weight:       1000.0,
-		delay:        0.1,
-		source:       source,
-		target:       target,
-		tho:          10,
-		maxWeight:    250.0,
-		minWeight:    0.0,
-		learningRate: 0,
+		weight: rand.Float64() * cst.MaxWeight,
+		delay:  rand.Float64() * cst.MaxDelay,
+		source: source,
+		target: target,
 	}
 	source.synapses = append(source.synapses, edge)
 	target.dendrites = append(target.dendrites, edge)

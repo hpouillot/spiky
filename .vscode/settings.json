@@ -1,3 +1,4 @@
 {
-    "go.autocompleteUnimportedPackages": true
+    "go.autocompleteUnimportedPackages": true,
+    "gopls": { "ui.semanticTokens": true }
 }
