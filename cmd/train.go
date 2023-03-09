@@ -18,7 +18,7 @@ var trainCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.SetLevel(logrus.ErrorLevel)
-		dataset := data.NewNumberDataset([]byte{100, 100, 100, 100}, []byte{255, 255, 255, 255})
+		dataset := data.NewNumberDataset([]byte{100}, []byte{255})
 		inputSize, outputSize := dataset.Shape()
 		model := buildModel(inputSize, outputSize)
 		for sample := range dataset.Cycle(1000000) {
@@ -31,8 +31,10 @@ func buildModel(inputSize int, outputSize int) core.Model {
 	csts := utils.NewDefaultConstants()
 	codec := core.NewLatencyCodec(csts)
 	input := core.NewLayer(inputSize)
+	hidden := core.NewLayer(50)
 	output := core.NewLayer(outputSize)
-	core.DenseConnection(input, output, csts)
+	core.DenseConnection(input, hidden, csts)
+	core.DenseConnection(hidden, output, csts)
 	model := core.NewSampleModel(codec, input, output, csts)
 	return model
 }
