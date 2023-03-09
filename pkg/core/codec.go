@@ -23,15 +23,21 @@ type Codec interface {
 	Decoder
 }
 
-// Time to first spike
-type RateCodec struct {
-	duration float64
-}
-
 func NewRateCodec(csts *utils.Constants) *RateCodec {
 	return &RateCodec{
 		duration: csts.MaxTime,
 	}
+}
+
+func NewLatencyCodec(cst *utils.Constants) *LatencyCodec {
+	return &LatencyCodec{
+		constants: cst,
+	}
+}
+
+// Time to first spike
+type RateCodec struct {
+	duration float64
 }
 
 func (codec *RateCodec) Encode(value byte) []float64 {
@@ -75,10 +81,4 @@ func (codec *LatencyCodec) Decode(spikes []float64) byte {
 		break
 	}
 	return byte((firstSpikeTime / codec.constants.MaxTime) * math.MaxUint8)
-}
-
-func NewLatencyCodec(cst *utils.Constants) *LatencyCodec {
-	return &LatencyCodec{
-		constants: cst,
-	}
 }

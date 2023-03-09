@@ -28,3 +28,7 @@ func TestModelCreation(t *testing.T) {
 	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
 	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Uint8)
 }
+
+func TestModelTraining(t *testing.T) {
+	
+}
