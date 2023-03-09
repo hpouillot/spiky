@@ -1,5 +1,5 @@
 test:
-    go test -json -v ./... | gotestfmt
+    go test -json ./pkg/... | gotestfmt
 
 install:
     go install

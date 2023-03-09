@@ -1,31 +1,30 @@
 package core
 
 import (
+	"os"
+	"reflect"
 	"spiky/pkg/utils"
 	"testing"
+
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(m *testing.M) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	code := m.Run()
+	os.Exit(code)
+}
+
 func TestModelCreation(t *testing.T) {
-	codec := NewRateCodec(10)
+	csts := utils.NewDefaultConstants()
+	output_size := 2
+	codec := NewLatencyCodec(csts)
 	input := NewLayer(2)
-	output := NewLayer(2)
-	constants := &utils.Constants{
-		MaxWeight:        20,
-		MinWeight:        0,
-		LearningRate:     0.1,
-		Threshold:        200.0,
-		RefractoryPeriod: 1.0,
-		Tho:              5.0,
-		MaxDelay:         1.0,
-	}
-	input.Visit(func(idx int, source *Neuron) {
-		output.Visit(func(idx int, target *Neuron) {
-			NewEdge(source, target, constants)
-		})
-	})
-	model := NewSampleModel(codec, input, output, constants)
-	outputValue := model.Predict([]byte{255, 255}, 10)
-	if len(outputValue) != 2 {
-		t.Error("Invalid output size")
-	}
+	output := NewLayer(output_size)
+	DenseConnection(input, output, csts)
+	model := NewSampleModel(codec, input, output, csts)
+	prediction := model.Predict([]byte{255, 255})
+	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
+	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Uint8)
 }

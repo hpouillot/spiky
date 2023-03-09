@@ -34,7 +34,7 @@ func (model *SampleModel) GetOutput() Box[Neuron] {
 	return model.output
 }
 
-func (model *SampleModel) Predict(x []byte, duration float64) []byte {
+func (model *SampleModel) Predict(x []byte) []byte {
 	input := model.GetInput()
 	if input == nil {
 		return []byte{}
@@ -46,7 +46,7 @@ func (model *SampleModel) Predict(x []byte, duration float64) []byte {
 			model.world.Schedule(time, node.Fire)
 		}
 	})
-	for model.world.Next(duration) {
+	for model.world.Next() {
 	}
 	output := model.GetOutput()
 	y := make([]byte, output.Size())

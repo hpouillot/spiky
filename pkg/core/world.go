@@ -27,9 +27,9 @@ func (w *World) Schedule(time float64, process Process) {
 	w.stack.Push(time, process)
 }
 
-func (w *World) Next(duration float64) bool {
+func (w *World) Next() bool {
 	item := w.stack.Pop()
-	if item == nil || w.time >= duration {
+	if item == nil || w.time >= w.Const.MaxTime {
 		return false
 	}
 	w.setTime(item.Time)

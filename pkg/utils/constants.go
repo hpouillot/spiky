@@ -8,6 +8,7 @@ type Constants struct {
 	Threshold        float64
 	RefractoryPeriod float64
 	Tho              float64
+	MaxTime          float64
 }
 
 func NewDefaultConstants() *Constants {
@@ -19,5 +20,6 @@ func NewDefaultConstants() *Constants {
 		RefractoryPeriod: 1.0,
 		Tho:              10.0,
 		MaxDelay:         1.0,
+		MaxTime:          30.0,
 	}
 }

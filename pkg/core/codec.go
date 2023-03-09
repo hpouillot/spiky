@@ -3,6 +3,7 @@ package core
 import (
 	"math"
 	"sort"
+	"spiky/pkg/utils"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -27,9 +28,9 @@ type RateCodec struct {
 	duration float64
 }
 
-func NewRateCodec(duration float64) *RateCodec {
+func NewRateCodec(csts *utils.Constants) *RateCodec {
 	return &RateCodec{
-		duration: duration,
+		duration: csts.MaxTime,
 	}
 }
 
@@ -47,8 +48,6 @@ func (codec *RateCodec) Encode(value byte) []float64 {
 		spikes[i] = r.Float64() * codec.duration
 	}
 	sort.Float64s(spikes)
-	// Compute number of events
-	// Take that many rand numbers in interval
 	return spikes
 }
 
@@ -57,4 +56,29 @@ func (codec *RateCodec) Decode(spikes []float64) byte {
 	rate := sppikeCount / codec.duration
 	// Get poisson
 	return uint8(rate * math.MaxUint8)
+}
+
+type LatencyCodec struct {
+	constants *utils.Constants
+}
+
+func (codec *LatencyCodec) Encode(value byte) []float64 {
+	time := (float64(math.MaxUint8-value) / float64(math.MaxUint8)) * codec.constants.MaxTime
+	spikes := []float64{time}
+	return spikes
+}
+
+func (codec *LatencyCodec) Decode(spikes []float64) byte {
+	firstSpikeTime := 0.0
+	for _, time := range spikes {
+		firstSpikeTime = time
+		break
+	}
+	return byte((firstSpikeTime / codec.constants.MaxTime) * math.MaxUint8)
+}
+
+func NewLatencyCodec(cst *utils.Constants) *LatencyCodec {
+	return &LatencyCodec{
+		constants: cst,
+	}
 }
