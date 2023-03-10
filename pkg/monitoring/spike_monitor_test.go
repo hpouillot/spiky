@@ -23,10 +23,11 @@ func (ml *MockedLayer) Size() int {
 func TestSpikeMonitor(t *testing.T) {
 	layer := new(MockedLayer)
 	layer.On("Visit", mock.Anything).Return()
-	monitor := NewSpikeMonitor(layer)
-	monitor.Open()
+	monitor := NewSpikeMonitor(layer, 10)
+	ticker := time.NewTicker(30 * time.Millisecond)
+	monitor.Open(ticker.C)
 	duration := 65 * time.Millisecond
 	time.Sleep(duration)
 	layer.AssertNumberOfCalls(t, "Visit", 2)
-	monitor.Close()
+	ticker.Stop()
 }

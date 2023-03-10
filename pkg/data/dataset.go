@@ -7,29 +7,23 @@ type Sample struct {
 	Y []byte
 }
 
-type IDataset interface {
-	Iter() Generator[Sample]
-	Cycle() Generator[Sample]
+type Shape struct {
+	X int
+	Y int
 }
 
 type Dataset struct {
-	xSize int
-	ySize int
-
-	xSamples [][]byte
-	ySamples [][]byte
+	len   int
+	shape Shape
+	get   func(idx int) Sample
 }
 
 func (d *Dataset) Iter() Generator[Sample] {
-	n := len(d.xSamples)
 	ch := make(Generator[Sample])
 
 	go func() {
-		for i := 0; i < n; i++ {
-			ch <- Sample{
-				X: d.xSamples[i],
-				Y: d.ySamples[i],
-			}
+		for i := 0; i < d.len; i++ {
+			ch <- d.get(i)
 		}
 		close(ch)
 	}()
@@ -38,15 +32,11 @@ func (d *Dataset) Iter() Generator[Sample] {
 }
 
 func (d *Dataset) Cycle(iterations int) Generator[Sample] {
-	sampleSize := len(d.xSamples)
 	ch := make(Generator[Sample])
 
 	go func() {
 		for i := 0; i < iterations; i++ {
-			ch <- Sample{
-				X: d.xSamples[i%sampleSize],
-				Y: d.ySamples[i%sampleSize],
-			}
+			ch <- d.get(iterations % d.len)
 		}
 		close(ch)
 	}()
@@ -54,8 +44,12 @@ func (d *Dataset) Cycle(iterations int) Generator[Sample] {
 	return ch
 }
 
+func (d *Dataset) Len() int {
+	return d.len
+}
+
 func (d *Dataset) Shape() (int, int) {
-	return d.xSize, d.ySize
+	return d.shape.X, d.shape.Y
 }
 
 func NewNumberDataset(XSamples []byte, YSamples []byte) *Dataset {
@@ -71,9 +65,16 @@ func NewNumberDataset(XSamples []byte, YSamples []byte) *Dataset {
 		ySamples[idx] = []byte{Y}
 	}
 	return &Dataset{
-		xSize:    1,
-		ySize:    1,
-		xSamples: xSamples,
-		ySamples: ySamples,
+		get: func(idx int) Sample {
+			return Sample{
+				X: []byte{XSamples[idx]},
+				Y: []byte{YSamples[idx]},
+			}
+		},
+		len: len(xSamples),
+		shape: Shape{
+			X: 1,
+			Y: 1,
+		},
 	}
 }
