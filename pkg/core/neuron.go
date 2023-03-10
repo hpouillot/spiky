@@ -5,6 +5,7 @@ import (
 )
 
 type Neuron struct {
+	id        string
 	potential float64
 	spikes    []float64
 	synapses  []*Edge
@@ -31,8 +32,14 @@ func (node *Neuron) Fire(world *World) {
 	node.potential = 0
 }
 
-func NewNeuron() *Neuron {
+func (n *Neuron) Clear() {
+	n.potential = 0
+	n.spikes = []float64{}
+}
+
+func NewNeuron(id string) *Neuron {
 	return &Neuron{
+		id:        id,
 		potential: 0.0,
 		spikes:    []float64{},
 		synapses:  []*Edge{},

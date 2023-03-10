@@ -9,6 +9,7 @@ type Model interface {
 	GetOutput() Box[Neuron]
 	Predict(input []byte) []byte
 	Fit(input []byte, output []byte) []byte
+	Clear()
 }
 
 type SampleModel struct {
@@ -27,12 +28,36 @@ func NewSampleModel(codec Codec, input Box[Neuron], output Box[Neuron], constant
 	}
 }
 
+func (model *SampleModel) Visit(fn func(neuron *Neuron)) {
+	visitedNeurons := make(map[string]bool)
+	nodesToVisit := make(map[string]*Neuron)
+	model.GetInput().Visit(func(idx int, neuron *Neuron) {
+		nodesToVisit[neuron.id] = neuron
+	})
+	for id, neuron := range nodesToVisit {
+		visitedNeurons[id] = true
+		fn(neuron)
+		for _, syn := range neuron.synapses {
+			if !visitedNeurons[syn.target.id] {
+				nodesToVisit[syn.target.id] = syn.target
+			}
+		}
+	}
+}
+
 func (model *SampleModel) GetInput() Box[Neuron] {
 	return model.input
 }
 
 func (model *SampleModel) GetOutput() Box[Neuron] {
 	return model.output
+}
+
+func (model *SampleModel) Clear() {
+	model.Visit(func(neuron *Neuron) {
+		neuron.Clear()
+	})
+	model.world.Clear()
 }
 
 func (model *SampleModel) Predict(x []byte) []byte {
@@ -62,11 +87,11 @@ func (model *SampleModel) Fit(x []byte, y []byte) []byte {
 	if input == nil {
 		return []byte{}
 	}
-	input.Visit(func(idx int, node *Neuron) {
+	input.Visit(func(idx int, neuron *Neuron) {
 		value := x[idx]
 		spikes := model.codec.Encode(value)
 		for _, time := range spikes {
-			model.world.Schedule(time, node.Fire)
+			model.world.Schedule(time, neuron.Fire)
 		}
 	})
 	for model.world.Next() {

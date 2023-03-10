@@ -21,12 +21,12 @@ type Dataset struct {
 func (d *Dataset) Iter() Generator[Sample] {
 	ch := make(Generator[Sample])
 
-	go func() {
-		for i := 0; i < d.len; i++ {
+	go func(iter int) {
+		for i := 0; i < iter; i++ {
 			ch <- d.get(i)
 		}
 		close(ch)
-	}()
+	}(d.len)
 
 	return ch
 }
@@ -34,12 +34,12 @@ func (d *Dataset) Iter() Generator[Sample] {
 func (d *Dataset) Cycle(iterations int) Generator[Sample] {
 	ch := make(Generator[Sample])
 
-	go func() {
-		for i := 0; i < iterations; i++ {
-			ch <- d.get(iterations % d.len)
+	go func(iter int) {
+		for i := 0; i < iter; i++ {
+			ch <- d.get(i % d.len)
 		}
 		close(ch)
-	}()
+	}(iterations)
 
 	return ch
 }

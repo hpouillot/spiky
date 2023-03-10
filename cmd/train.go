@@ -28,10 +28,11 @@ var trainCmd = &cobra.Command{
 		monitor := monitoring.NewSpikeMonitor(model.GetInput(), int(csts.MaxTime))
 		timeChannel := make(chan time.Time)
 		monitor.Open(timeChannel)
-		for sample := range dataset.Cycle(1000) {
+		for sample := range dataset.Cycle(10000) {
+			model.Clear()
 			model.Fit(sample.X, sample.Y)
 			timeChannel <- time.Now()
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(1000 * time.Millisecond)
 			if monitor.IsClosed() {
 				break
 			}

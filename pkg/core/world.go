@@ -37,6 +37,11 @@ func (w *World) Next() bool {
 	return true
 }
 
+func (w *World) Clear() {
+	w.time = 0.0
+	w.stack = *utils.NewTimeStack[Process]()
+}
+
 func NewWorld(constants *utils.Constants) *World {
 	return &World{
 		time:  0.0,
