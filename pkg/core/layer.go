@@ -3,6 +3,7 @@ package core
 import "github.com/jaevor/go-nanoid"
 
 type Layer struct {
+	name    string
 	neurons []*Neuron
 }
 
@@ -16,7 +17,11 @@ func (nb *Layer) Size() int {
 	return len(nb.neurons)
 }
 
-func NewLayer(size int) *Layer {
+func (nb *Layer) GetName() string {
+	return nb.name
+}
+
+func NewLayer(name string, size int) *Layer {
 	idGenerator, err := nanoid.Standard(21)
 	if err != nil {
 		panic("Can't instantiate nanoid")
@@ -26,6 +31,7 @@ func NewLayer(size int) *Layer {
 		neurons[i] = NewNeuron(idGenerator())
 	}
 	return &Layer{
+		name:    name,
 		neurons: neurons,
 	}
 }

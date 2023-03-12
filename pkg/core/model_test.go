@@ -20,15 +20,27 @@ func TestModelCreation(t *testing.T) {
 	csts := utils.NewDefaultConstants()
 	output_size := 2
 	codec := NewLatencyCodec(csts)
-	input := NewLayer(2)
-	output := NewLayer(output_size)
+	input := NewLayer("Input", 2)
+	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
-	model := NewSampleModel(codec, input, output, csts)
+	model := NewSampleModel(codec, []*Layer{input, output}, csts)
 	prediction := model.Predict([]byte{255, 255})
 	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
 	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Uint8)
 }
 
-func TestModelTraining(t *testing.T) {
-	
+func TestModelVisit(t *testing.T) {
+	csts := utils.NewDefaultConstants()
+	input := NewLayer("Input", 2)
+	hidden := NewLayer("Hidden", 10)
+	output := NewLayer("Output", 10)
+	codec := NewLatencyCodec(csts)
+	DenseConnection(input, hidden, csts)
+	DenseConnection(hidden, output, csts)
+	model := NewSampleModel(codec, []*Layer{input, hidden, output}, csts)
+	visitCount := 0
+	model.Visit(func(n *Neuron) {
+		visitCount++
+	})
+	assert.Equal(t, 22, visitCount, "Invalid neuron visit")
 }

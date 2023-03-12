@@ -6,9 +6,8 @@ package cmd
 import (
 	"spiky/pkg/core"
 	"spiky/pkg/data"
-	"spiky/pkg/monitoring"
+	"spiky/pkg/training"
 	"spiky/pkg/utils"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -20,33 +19,34 @@ var trainCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.SetLevel(logrus.ErrorLevel)
+
 		dataset := data.NewMnist("./mnist")
-		// dataset := data.NewNumberDataset([]byte{100, 3, 255, 15, 26}, []byte{255, 43, 12, 54, 23})
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
 		model := buildModel(inputSize, outputSize, csts)
-		monitor := monitoring.NewSpikeMonitor(model.GetInput(), int(csts.MaxTime))
-		timeChannel := make(chan time.Time)
-		monitor.Open(timeChannel)
-		for sample := range dataset.Cycle(10000) {
-			model.Clear()
-			model.Fit(sample.X, sample.Y)
-			timeChannel <- time.Now()
-			time.Sleep(1000 * time.Millisecond)
-			if monitor.IsClosed() {
-				break
-			}
-		}
-		close(timeChannel)
+
+		app := training.NewTrainingApp(model, dataset, csts)
+		defer app.Close()
+		app.Open()
+		app.Start()
 	},
 }
 
 func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.Model {
 	codec := core.NewLatencyCodec(csts)
-	input := core.NewLayer(inputSize)
-	output := core.NewLayer(outputSize)
-	core.DenseConnection(input, output, csts)
-	model := core.NewSampleModel(codec, input, output, csts)
+	input := core.NewLayer("Input", inputSize)
+	hidden1 := core.NewLayer("Hidden 1", 50)
+	core.DenseConnection(input, hidden1, csts)
+	// hidden2 := core.NewLayer("Hidden 2", 50)
+	// core.DenseConnection(hidden1, hidden2, csts)
+	output := core.NewLayer("Output", outputSize)
+	core.DenseConnection(hidden1, output, csts)
+	layers := []*core.Layer{
+		input,
+		hidden1,
+		output,
+	}
+	model := core.NewSampleModel(codec, layers, csts)
 	return model
 }
 

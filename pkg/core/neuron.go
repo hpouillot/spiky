@@ -1,6 +1,8 @@
 package core
 
 import (
+	"errors"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +18,12 @@ func (node *Neuron) GetSpikes() *[]float64 {
 	return &node.spikes
 }
 
-func (node *Neuron) GetLastSpikeTime() float64 {
-	return node.spikes[len(node.spikes)-1]
+func (node *Neuron) GetLastSpikeTime() (float64, error) {
+	spikeLength := len(node.spikes)
+	if spikeLength == 0 {
+		return 0, errors.New("no spike")
+	}
+	return node.spikes[len(node.spikes)-1], nil
 }
 
 func (node *Neuron) Fire(world *World) {
@@ -27,7 +33,7 @@ func (node *Neuron) Fire(world *World) {
 		syn.Forward(world)
 	}
 	for _, dend := range node.dendrites {
-		world.Schedule(world.GetTime()+world.Const.RefractoryPeriod, dend.Backward)
+		world.Schedule(world.GetTime()+2.0, dend.Backward)
 	}
 	node.potential = 0
 }

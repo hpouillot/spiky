@@ -16,6 +16,14 @@ type Edge struct {
 func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
 		target := edge.target
+		_, err := target.GetLastSpikeTime()
+		// There is a last spike
+		if err == nil {
+			return
+			// if lastSpike >= world.GetTime()-world.Const.RefractoryPeriod {
+			// 	return
+			// }
+		}
 		target.potential += edge.weight
 		if target.potential >= world.Const.Threshold {
 			target.Fire(world)
@@ -24,8 +32,14 @@ func (edge *Edge) Forward(world *World) {
 }
 
 func (edge *Edge) Backward(world *World) {
-	preSpike := edge.source.GetLastSpikeTime()
-	postSpike := edge.target.GetLastSpikeTime()
+	preSpike, preErr := edge.source.GetLastSpikeTime()
+	if preErr != nil {
+		return
+	}
+	postSpike, postErr := edge.target.GetLastSpikeTime()
+	if postErr != nil {
+		return
+	}
 	deltaT := postSpike - preSpike
 	Ap := 10.0
 	Am := 5.0
