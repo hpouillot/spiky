@@ -75,10 +75,10 @@ func (codec *LatencyCodec) Encode(value byte) []float64 {
 }
 
 func (codec *LatencyCodec) Decode(spikes []float64) byte {
-	firstSpikeTime := 0.0
+	firstSpikeTime := codec.constants.MaxTime
 	for _, time := range spikes {
 		firstSpikeTime = time
 		break
 	}
-	return byte((firstSpikeTime / codec.constants.MaxTime) * math.MaxUint8)
+	return byte(((codec.constants.MaxTime - firstSpikeTime) / codec.constants.MaxTime) * math.MaxUint8)
 }

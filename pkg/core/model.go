@@ -1,6 +1,7 @@
 package core
 
 import (
+	"math"
 	"spiky/pkg/utils"
 )
 
@@ -11,7 +12,7 @@ type Model interface {
 	GetLayer(idx int) *Layer
 	Len() int
 	Predict(input []byte) []byte
-	Fit(input []byte, output []byte) []byte
+	Fit(input []byte, output []byte) ([]byte, float64)
 	Clear()
 }
 
@@ -83,7 +84,7 @@ func (model *SampleModel) Predict(x []byte) []byte {
 	return y
 }
 
-func (model *SampleModel) Fit(x []byte, y []byte) []byte {
+func (model *SampleModel) Fit(x []byte, y []byte) ([]byte, float64) {
 	input := model.GetInput()
 	input.Visit(func(idx int, neuron *Neuron) {
 		value := x[idx]
@@ -95,9 +96,17 @@ func (model *SampleModel) Fit(x []byte, y []byte) []byte {
 	for model.world.Next() {
 	}
 	output := model.GetOutput()
-	prediction := make([]byte, output.Size())
+	predictions := make([]byte, output.Size())
+	loss := 0.0
 	output.Visit(func(idx int, node *Neuron) {
-		prediction[idx] = model.codec.Decode(node.spikes)
+		spikes := model.codec.Encode(y[idx])
+		lastSpike, err := node.GetLastSpikeTime()
+		if err != nil {
+			lastSpike = model.world.Const.MaxTime
+		}
+		node.Adjust(model.world, lastSpike-spikes[0])
+		loss += math.Abs(lastSpike - spikes[0])
+		predictions[idx] = model.codec.Decode(*node.GetSpikes())
 	})
-	return prediction
+	return predictions, loss
 }

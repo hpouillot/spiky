@@ -35,15 +35,13 @@ var trainCmd = &cobra.Command{
 func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.Model {
 	codec := core.NewLatencyCodec(csts)
 	input := core.NewLayer("Input", inputSize)
-	hidden1 := core.NewLayer("Hidden 1", 50)
-	core.DenseConnection(input, hidden1, csts)
-	// hidden2 := core.NewLayer("Hidden 2", 50)
-	// core.DenseConnection(hidden1, hidden2, csts)
+	// hidden1 := core.NewLayer("Hidden 1", 100)
+	// core.DenseConnection(input, hidden1, csts)
 	output := core.NewLayer("Output", outputSize)
-	core.DenseConnection(hidden1, output, csts)
+	core.DenseConnection(input, output, csts)
 	layers := []*core.Layer{
 		input,
-		hidden1,
+		// hidden1,
 		output,
 	}
 	model := core.NewSampleModel(codec, layers, csts)

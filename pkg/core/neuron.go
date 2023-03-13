@@ -32,10 +32,16 @@ func (node *Neuron) Fire(world *World) {
 	for _, syn := range node.synapses {
 		syn.Forward(world)
 	}
-	for _, dend := range node.dendrites {
-		world.Schedule(world.GetTime()+2.0, dend.Backward)
-	}
+	// for _, dend := range node.dendrites {
+	// 	world.Schedule(world.GetTime()+2.0, dend.Backward)
+	// }
 	node.potential = 0
+}
+
+func (node *Neuron) Adjust(world *World, err float64) {
+	for _, dend := range node.dendrites {
+		dend.Adjust(world, err)
+	}
 }
 
 func (n *Neuron) Clear() {

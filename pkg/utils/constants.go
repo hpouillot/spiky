@@ -14,9 +14,9 @@ type Constants struct {
 func NewDefaultConstants() *Constants {
 	return &Constants{
 		MaxWeight:        20,
-		MinWeight:        1.0,
-		LearningRate:     0.0001,
-		Threshold:        350.0,
+		MinWeight:        0.0,
+		LearningRate:     0.001,
+		Threshold:        200.0,
 		RefractoryPeriod: 10.0,
 		Tho:              5.0,
 		MaxDelay:         1.0,

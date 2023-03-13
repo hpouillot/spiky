@@ -50,6 +50,24 @@ func (edge *Edge) Backward(world *World) {
 	}
 }
 
+func (edge *Edge) Adjust(world *World, err float64) {
+	// preSpike, preErr := edge.source.GetLastSpikeTime()
+	// if preErr != nil {
+	// 	return
+	// }
+	// postSpike, postErr := edge.target.GetLastSpikeTime()
+	// if postErr != nil {
+	// 	postSpike = world.Const.MaxTime
+	// }
+	// deltaT := (postSpike - preSpike) / math.Abs(postSpike-preSpike)
+	deltaW := err * world.Const.LearningRate
+	if deltaW >= 0 {
+		edge.weight += deltaW * (world.Const.MaxWeight - edge.weight)
+	} else {
+		edge.weight += deltaW * (edge.weight - world.Const.MinWeight)
+	}
+}
+
 func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {
 	edge := &Edge{
 		weight: rand.Float64() * cst.MaxWeight,

@@ -7,6 +7,7 @@ import (
 	"spiky/pkg/utils"
 	"time"
 
+	"github.com/aclements/go-gg/generic/slice"
 	ui "github.com/gizak/termui/v3"
 	"github.com/sirupsen/logrus"
 )
@@ -62,10 +63,10 @@ func (app *TrainignApp) observe() {
 				app.layersWidget.ScrollUp()
 				app.spikeWidget.layer = app.model.GetLayer(app.layersWidget.SelectedRow)
 			case "<Left>":
-				app.speed = utils.ClampFloat(math.Floor(app.speed*0.9), 10, 1000)
+				app.speed = utils.ClampFloat(math.Floor(app.speed*0.9-1), 0, 10000)
 				app.metrics["speed"] = app.speed
 			case "<Right>":
-				app.speed = utils.ClampFloat(math.Floor(app.speed*1.1), 10, 1000)
+				app.speed = utils.ClampFloat(math.Ceil(app.speed*1.1+1), 0, 10000)
 				app.metrics["speed"] = app.speed
 			case "q", "<C-c>":
 				app.Stop()
@@ -80,10 +81,20 @@ func (app *TrainignApp) observe() {
 }
 
 func (app *TrainignApp) Start() {
+	idx := 0.0
+	totalIteration := 55000
 	go app.observe()
-	for sample := range app.dataset.Cycle(1000) {
+	for sample := range app.dataset.Cycle(totalIteration) {
+		idx++
+		startTime := time.Now()
 		app.model.Clear()
-		app.model.Fit(sample.X, sample.Y)
+		predictions, loss := app.model.Fit(sample.X, sample.Y)
+		endTime := time.Now()
+		app.metrics["0. loss"] = loss
+		app.metrics["1. expected"] = float64(slice.ArgMax(sample.Y))
+		app.metrics["2. predicted"] = float64(slice.ArgMax(predictions))
+		app.metrics["3. training"] = (idx / float64(totalIteration)) * 100
+		app.metrics["4. time to fit"] = float64(endTime.Sub(startTime).Milliseconds())
 		app.Render()
 		time.Sleep(time.Duration(app.speed) * time.Millisecond)
 		if app.isStopped {
