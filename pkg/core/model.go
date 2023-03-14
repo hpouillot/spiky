@@ -11,18 +11,20 @@ type Model interface {
 	GetAllLayer() []*Layer
 	GetLayer(idx int) *Layer
 	Len() int
-	Predict(input []byte) []byte
-	Fit(input []byte, output []byte) ([]byte, float64)
-	Clear()
+	Encode(input []byte)
+	Decode() []byte
+	Run()
+	Adjust(output []byte) float64
+	Reset()
 }
 
 type SampleModel struct {
 	layers []*Layer
-	codec  Codec
+	codec  ICodec
 	world  *World
 }
 
-func NewSampleModel(codec Codec, layers []*Layer, constants *utils.Constants) *SampleModel {
+func NewSampleModel(codec ICodec, layers []*Layer, constants *utils.Constants) *SampleModel {
 	return &SampleModel{
 		layers: layers,
 		codec:  codec,
@@ -58,24 +60,21 @@ func (model *SampleModel) Len() int {
 	return len(model.layers)
 }
 
-func (model *SampleModel) Clear() {
-	model.Visit(func(neuron *Neuron) {
-		neuron.Clear()
-	})
-	model.world.Clear()
+func (model *SampleModel) Reset() {
+	model.world.Reset()
 }
 
-func (model *SampleModel) Predict(x []byte) []byte {
+func (model *SampleModel) Encode(x []byte) {
 	input := model.GetInput()
 	input.Visit(func(idx int, node *Neuron) {
-		value := x[idx]
-		spikes := model.codec.Encode(value)
+		spikes := model.codec.Encode(x[idx])
 		for _, time := range spikes {
 			model.world.Schedule(time, node.Fire)
 		}
 	})
-	for model.world.Next() {
-	}
+}
+
+func (model *SampleModel) Decode() []byte {
 	output := model.GetOutput()
 	y := make([]byte, output.Size())
 	output.Visit(func(idx int, node *Neuron) {
@@ -84,29 +83,25 @@ func (model *SampleModel) Predict(x []byte) []byte {
 	return y
 }
 
-func (model *SampleModel) Fit(x []byte, y []byte) ([]byte, float64) {
-	input := model.GetInput()
-	input.Visit(func(idx int, neuron *Neuron) {
-		value := x[idx]
-		spikes := model.codec.Encode(value)
-		for _, time := range spikes {
-			model.world.Schedule(time, neuron.Fire)
-		}
-	})
+func (model *SampleModel) Run() {
 	for model.world.Next() {
 	}
-	output := model.GetOutput()
-	predictions := make([]byte, output.Size())
+}
+
+func (model *SampleModel) Adjust(y []byte) float64 {
 	loss := 0.0
-	output.Visit(func(idx int, node *Neuron) {
-		spikes := model.codec.Encode(y[idx])
+	model.GetOutput().Visit(func(idx int, node *Neuron) {
+		expectedSpikes := model.codec.Encode(y[idx])
 		lastSpike, err := node.GetLastSpikeTime()
 		if err != nil {
 			lastSpike = model.world.Const.MaxTime
 		}
-		node.Adjust(model.world, lastSpike-spikes[0])
-		loss += math.Abs(lastSpike - spikes[0])
-		predictions[idx] = model.codec.Decode(*node.GetSpikes())
+		lastExpectedSpike := model.world.Const.MaxTime
+		if len(expectedSpikes) != 0 {
+			lastExpectedSpike = expectedSpikes[0]
+		}
+		node.Adjust(model.world, lastSpike-lastExpectedSpike)
+		loss += math.Abs(lastSpike - lastExpectedSpike)
 	})
-	return predictions, loss
+	return loss
 }

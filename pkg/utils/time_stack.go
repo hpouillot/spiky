@@ -11,12 +11,12 @@ type StackItem[T interface{}] struct {
 }
 
 type TimeStack[T interface{}] struct {
-	heap *itemHeap[T]
+	heap itemHeap[T]
 }
 
 func NewTimeStack[T interface{}]() *TimeStack[T] {
 	return &TimeStack[T]{
-		heap: &itemHeap[T]{},
+		heap: itemHeap[T]{},
 	}
 }
 
@@ -25,22 +25,22 @@ func (s *TimeStack[T]) Push(time float64, process T) {
 		Value: process,
 		Time:  time,
 	}
-	heap.Push(s.heap, newItem)
+	heap.Push(&s.heap, newItem)
 }
 
 func (s *TimeStack[T]) Pop() *StackItem[T] {
 	if s.heap.Len() == 0 {
 		return nil
 	}
-	return heap.Pop(s.heap).(*StackItem[T])
+	return heap.Pop(&s.heap).(*StackItem[T])
 }
 
 func (s *TimeStack[T]) Len() int {
 	return s.heap.Len()
 }
 
-func (s *TimeStack[T]) Clear() {
-	s.heap = &itemHeap[T]{}
+func (s *TimeStack[T]) Reset() {
+	s.heap = nil
 }
 
 type itemHeap[T interface{}] []*StackItem[T]

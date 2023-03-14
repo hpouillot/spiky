@@ -24,7 +24,9 @@ func TestModelCreation(t *testing.T) {
 	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
 	model := NewSampleModel(codec, []*Layer{input, output}, csts)
-	prediction := model.Predict([]byte{255, 255})
+	model.Encode([]byte{255, 255})
+	model.Run()
+	prediction := model.Decode()
 	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
 	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Uint8)
 }

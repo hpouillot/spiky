@@ -25,6 +25,8 @@ type TrainignApp struct {
 	speed     float64
 	isStopped bool
 	metrics   map[string]float64
+
+	errors int
 }
 
 func (app *TrainignApp) Open() {
@@ -80,28 +82,37 @@ func (app *TrainignApp) observe() {
 	}
 }
 
-func (app *TrainignApp) Start() {
-	idx := 0.0
-	totalIteration := 55000
+func (app *TrainignApp) Start(iteration int) {
+	app.isStopped = false
+	queueSize := 1000
+	errors := utils.NewBooleanQueue(queueSize)
+	idx := 0
 	go app.observe()
-	for sample := range app.dataset.Cycle(totalIteration) {
+	for sample := range app.dataset.Cycle(iteration) {
 		idx++
 		startTime := time.Now()
-		app.model.Clear()
-		predictions, loss := app.model.Fit(sample.X, sample.Y)
+		app.model.Reset()
+		app.model.Encode(sample.X)
+		app.model.Run()
+		loss := app.model.Adjust(sample.Y)
 		endTime := time.Now()
+		predictions := app.model.Decode()
+		predictedClass := slice.ArgMax(predictions)
+		expectedClass := slice.ArgMax(sample.Y)
+		errors.Push(predictedClass != expectedClass)
+
 		app.metrics["0. loss"] = loss
-		app.metrics["1. expected"] = float64(slice.ArgMax(sample.Y))
-		app.metrics["2. predicted"] = float64(slice.ArgMax(predictions))
-		app.metrics["3. training"] = (idx / float64(totalIteration)) * 100
-		app.metrics["4. time to fit"] = float64(endTime.Sub(startTime).Milliseconds())
+		app.metrics["1. expected"] = float64(expectedClass)
+		app.metrics["2. predicted"] = float64(predictedClass)
+		app.metrics["3. training"] = (float64(idx) / float64(iteration)) * 100
+		app.metrics["4. time to fit"] = float64(endTime.Sub(startTime).Microseconds())
+		app.metrics["5. error rate"] = float64(errors.Count()) / float64(queueSize)
 		app.Render()
 		time.Sleep(time.Duration(app.speed) * time.Millisecond)
 		if app.isStopped {
 			break
 		}
 	}
-	app.isStopped = false
 }
 
 func (app *TrainignApp) Stop() {
@@ -126,6 +137,7 @@ func NewTrainingApp(model core.Model, dataset *data.Dataset, csts *utils.Constan
 		isStopped: false,
 		speed:     metrics["speed"],
 		metrics:   metrics,
+		errors:    0,
 	}
 	return app
 }

@@ -28,7 +28,7 @@ var trainCmd = &cobra.Command{
 		app := training.NewTrainingApp(model, dataset, csts)
 		defer app.Close()
 		app.Open()
-		app.Start()
+		app.Start(55000)
 	},
 }
 

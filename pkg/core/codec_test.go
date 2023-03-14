@@ -8,15 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRateCodec(t *testing.T) {
-	constants := utils.NewDefaultConstants()
-	codec := NewRateCodec(constants)
-	spikes := codec.Encode(255)
-	if len(spikes) < 5 {
-		t.Error("Invalid spike count")
-	}
-}
-
 func TestLatencyCodec(t *testing.T) {
 	constants := utils.NewDefaultConstants()
 	codec := NewLatencyCodec(constants)

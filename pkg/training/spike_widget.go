@@ -18,7 +18,7 @@ func (m *SpikeWidget) Draw(buf *termui.Buffer) {
 	m.Block.Draw(buf)
 	layerSize := m.layer.Size()
 	m.layer.Visit(func(idx int, n *core.Neuron) {
-		for _, time := range *n.GetSpikes() {
+		for _, time := range n.GetSpikes() {
 			x := int((time / float64(m.timeWindow)) * float64(m.Dx()))
 			y := int((float64(idx) / float64(layerSize)) * float64(m.Dy()))
 			cell := termui.NewCell('•', termui.NewStyle(termui.ColorWhite))
