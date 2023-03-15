@@ -4,7 +4,6 @@ import (
 	"spiky/pkg/core"
 	"spiky/pkg/observer/widget"
 	"spiky/pkg/utils"
-	"time"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/sirupsen/logrus"
@@ -49,7 +48,6 @@ func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, i
 	)
 
 	go obs.observe()
-	go obs.refresh()
 }
 
 func (app *TrainingObserver) observe() {
@@ -65,9 +63,11 @@ func (app *TrainingObserver) observe() {
 			case "<Left>":
 				app.trainer.SpeedDown()
 				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
+				app.render()
 			case "<Right>":
 				app.trainer.SpeedUp()
 				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
+				app.render()
 			case "q", "<C-c>":
 				app.trainer.Stop()
 			}
@@ -80,17 +80,11 @@ func (app *TrainingObserver) observe() {
 	}
 }
 
-func (app *TrainingObserver) refresh() {
-	ticker := time.NewTicker(time.Duration(100) * time.Millisecond)
-	for range ticker.C {
-		app.render()
-	}
-}
-
 func (app *TrainingObserver) OnUpdate(metrics *map[string]float64) {
 	for k, v := range *metrics {
 		app.metricsWidget.Set(k, v)
 	}
+	app.render()
 }
 
 func (app *TrainingObserver) OnStop() {
