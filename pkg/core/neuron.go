@@ -21,7 +21,7 @@ func (neuron *Neuron) GetLastSpikeTime() (float64, error) {
 	if spikeLength == 0 {
 		return 0, errors.New("no spike")
 	}
-	return (neuron.spikes)[len((neuron.spikes))-1], nil
+	return neuron.spikes[len((neuron.spikes))-1], nil
 }
 
 func (neuron *Neuron) Fire(world *World) {

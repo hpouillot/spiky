@@ -1,16 +1,18 @@
 package observer
 
 import (
-	"math"
 	"spiky/pkg/core"
 	"spiky/pkg/observer/widget"
 	"spiky/pkg/utils"
+	"time"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/sirupsen/logrus"
 )
 
 type TrainingObserver struct {
+	trainer *core.Trainer
+
 	model   core.IModel
 	dataset core.IDataset
 	csts    *utils.Constants
@@ -19,15 +21,9 @@ type TrainingObserver struct {
 	layersWidget  *widget.LayersWidget
 	spikeWidget   *widget.SpikeWidget
 	metricsWidget *widget.MetricsWidget
-
-	speed     float64
-	isStopped bool
-	metrics   map[string]float64
-
-	errors int
 }
 
-func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, metrics map[string]float64, iterations int) {
+func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, metrics *map[string]float64, iterations int) {
 	if err := ui.Init(); err != nil {
 		logrus.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -40,7 +36,7 @@ func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, m
 
 	obs.spikeWidget = widget.NewSpikeWidget(obs.model.GetInput(), int(obs.csts.MaxTime))
 	obs.layersWidget = widget.NewLayersWidget(obs.model.GetAllLayer())
-	obs.metricsWidget = widget.NewMetricsWidget(&obs.metrics)
+	obs.metricsWidget = widget.NewMetricsWidget(metrics)
 
 	obs.grid.Set(
 		ui.NewRow(1.0,
@@ -52,8 +48,8 @@ func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, m
 		),
 	)
 
-	obs.render()
 	go obs.observe()
+	go obs.refresh()
 }
 
 func (app *TrainingObserver) observe() {
@@ -67,11 +63,9 @@ func (app *TrainingObserver) observe() {
 				app.layersWidget.ScrollUp()
 				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
 			case "<Left>":
-				app.speed = utils.ClampFloat(math.Floor(app.speed*0.9-1), 0, 10000)
-				app.metrics["speed"] = app.speed
+				app.trainer.SpeedDown()
 			case "<Right>":
-				app.speed = utils.ClampFloat(math.Ceil(app.speed*1.1+1), 0, 10000)
-				app.metrics["speed"] = app.speed
+				app.trainer.SpeedUp()
 			case "q", "<C-c>":
 				app.OnStop()
 			}
@@ -84,12 +78,18 @@ func (app *TrainingObserver) observe() {
 	}
 }
 
+func (app *TrainingObserver) refresh() {
+	ticker := time.NewTicker(time.Duration(100) * time.Millisecond)
+	for range ticker.C {
+		app.render()
+	}
+}
+
 func (app *TrainingObserver) OnUpdate(idx int) {
-	app.render()
+
 }
 
 func (app *TrainingObserver) OnStop() {
-	app.isStopped = true
 	ui.Close()
 }
 
@@ -97,17 +97,15 @@ func (app *TrainingObserver) render() {
 	ui.Render(app.grid)
 }
 
-func NewTrainingObserver(csts *utils.Constants) *TrainingObserver {
+func NewTrainingObserver(trainer *core.Trainer, csts *utils.Constants) *TrainingObserver {
 	metrics := make(map[string]float64)
 	metrics["speed"] = float64(100)
 	app := &TrainingObserver{
-		model:     nil,
-		dataset:   nil,
-		csts:      csts,
-		isStopped: false,
-		speed:     metrics["speed"],
-		metrics:   metrics,
-		errors:    0,
+		trainer: trainer,
+		model:   nil,
+		dataset: nil,
+		csts:    csts,
 	}
+	trainer.Subscribe(app)
 	return app
 }

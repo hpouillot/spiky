@@ -26,11 +26,8 @@ var trainCmd = &cobra.Command{
 		csts := utils.NewDefaultConstants()
 		model := buildModel(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
-		trObserver := observer.NewTrainingObserver(csts)
-		pbObserver := observer.NewProgressBarObserver()
-		trainer.Subscribe(pbObserver)
-		trainer.Subscribe(trObserver)
-		trainer.Train(0.1)
+		observer.NewTrainingObserver(trainer, csts)
+		trainer.Train(1)
 	},
 }
 

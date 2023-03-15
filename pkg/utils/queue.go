@@ -16,6 +16,10 @@ func (q *Queue[T]) Pop() {
 	q.items = q.items[1:len(q.items)]
 }
 
+func (q *Queue[T]) Len() int {
+	return len(q.items)
+}
+
 type BooleanQueue struct {
 	Queue[bool]
 }
