@@ -11,25 +11,33 @@ import (
 
 type MetricsWidget struct {
 	widgets.List
-	metrics *map[string]float64
+	metrics map[string]float64
 }
 
 func (m *MetricsWidget) Draw(buf *termui.Buffer) {
-	m.Rows = make([]string, len(*m.metrics))
-	var keys []string = maps.Keys(*m.metrics)
+	m.Rows = make([]string, len(m.metrics))
+	var keys []string = maps.Keys(m.metrics)
 	sort.Strings(keys)
 	idx := 0
 	for _, key := range keys {
-		m.Rows[idx] = fmt.Sprintf("%v %.2f", key, (*m.metrics)[key])
+		m.Rows[idx] = fmt.Sprintf("%v %.2f", key, m.metrics[key])
 		idx++
 	}
 	m.List.Draw(buf)
 }
 
-func NewMetricsWidget(metrics *map[string]float64) *MetricsWidget {
+func (m *MetricsWidget) Set(key string, value float64) {
+	m.metrics[key] = value
+}
+
+func (m *MetricsWidget) Get(key string) float64 {
+	return m.metrics[key]
+}
+
+func NewMetricsWidget() *MetricsWidget {
 	widget := &MetricsWidget{
 		List:    *widgets.NewList(),
-		metrics: metrics,
+		metrics: map[string]float64{},
 	}
 	widget.Title = "Metrics"
 	return widget

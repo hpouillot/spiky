@@ -23,7 +23,7 @@ type TrainingObserver struct {
 	metricsWidget *widget.MetricsWidget
 }
 
-func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, metrics *map[string]float64, iterations int) {
+func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, iterations int) {
 	if err := ui.Init(); err != nil {
 		logrus.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -36,7 +36,7 @@ func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, m
 
 	obs.spikeWidget = widget.NewSpikeWidget(obs.model.GetInput(), int(obs.csts.MaxTime))
 	obs.layersWidget = widget.NewLayersWidget(obs.model.GetAllLayer())
-	obs.metricsWidget = widget.NewMetricsWidget(metrics)
+	obs.metricsWidget = widget.NewMetricsWidget()
 
 	obs.grid.Set(
 		ui.NewRow(1.0,
@@ -64,10 +64,12 @@ func (app *TrainingObserver) observe() {
 				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
 			case "<Left>":
 				app.trainer.SpeedDown()
+				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
 			case "<Right>":
 				app.trainer.SpeedUp()
+				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
 			case "q", "<C-c>":
-				app.OnStop()
+				app.trainer.Stop()
 			}
 		} else if e.Type == ui.ResizeEvent {
 			payload := e.Payload.(ui.Resize)
@@ -85,8 +87,10 @@ func (app *TrainingObserver) refresh() {
 	}
 }
 
-func (app *TrainingObserver) OnUpdate(idx int) {
-
+func (app *TrainingObserver) OnUpdate(metrics *map[string]float64) {
+	for k, v := range *metrics {
+		app.metricsWidget.Set(k, v)
+	}
 }
 
 func (app *TrainingObserver) OnStop() {

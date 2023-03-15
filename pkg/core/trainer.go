@@ -14,7 +14,7 @@ type Trainer struct {
 	observers []IObserver
 	constants *utils.Constants
 
-	metrics     map[string]float64
+	stopped     bool
 	waitingTime int
 	ticker      *time.Ticker
 }
@@ -32,17 +32,20 @@ func (t *Trainer) notify(fn func(obs IObserver)) {
 func (trainer *Trainer) SpeedDown() {
 	trainer.waitingTime = utils.ClampInt(int(math.Floor(float64(trainer.waitingTime)*0.9-1)), 1, 10000)
 	trainer.ticker = time.NewTicker(time.Duration(trainer.waitingTime) * time.Millisecond)
-	trainer.metrics["waiting time"] = float64(trainer.waitingTime)
+}
+
+func (trainer *Trainer) GetWaitingTime() int {
+	return trainer.waitingTime
 }
 
 func (trainer *Trainer) SpeedUp() {
 	trainer.waitingTime = utils.ClampInt(int(math.Ceil(float64(trainer.waitingTime)*1.1+1)), 1, 10000)
 	trainer.ticker = time.NewTicker(time.Duration(trainer.waitingTime) * time.Millisecond)
-	trainer.metrics["waiting time"] = float64(trainer.waitingTime)
 }
 
-func (trainer *Trainer) Train(epochs float64) {
+func (trainer *Trainer) Start(epochs float64) {
 	idx := 0
+	trainer.stopped = false
 	model := trainer.model
 	dataset := trainer.dataset
 	datasetSize := trainer.dataset.Len()
@@ -50,9 +53,10 @@ func (trainer *Trainer) Train(epochs float64) {
 	queueSize := 1000
 	errors := utils.NewBooleanQueue(queueSize)
 
-	trainer.notify(func(obs IObserver) { obs.OnStart(model, dataset, &trainer.metrics, iterations) })
+	trainer.notify(func(obs IObserver) { obs.OnStart(model, dataset, iterations) })
+	var metrics map[string]float64 = make(map[string]float64)
 
-	for sample := range dataset.Cycle(iterations) {
+	for sample := range trainer.dataset.Cycle(iterations) {
 		idx++
 		startTime := time.Now()
 		model.Reset()
@@ -65,18 +69,27 @@ func (trainer *Trainer) Train(epochs float64) {
 		expectedClass := slice.ArgMax(sample.Y)
 		errors.Push(predictedClass != expectedClass)
 
-		trainer.metrics["loss"] = loss
-		trainer.metrics["expected"] = float64(expectedClass)
-		trainer.metrics["predicted"] = float64(predictedClass)
-		trainer.metrics["training"] = (float64(idx) / float64(iterations)) * 100
-		trainer.metrics["time to fit"] = float64(endTime.Sub(startTime).Microseconds())
-		trainer.metrics["error rate"] = float64(errors.Count()) / float64(errors.Len())
+		metrics["idx"] = float64(idx)
+		metrics["loss"] = loss
+		metrics["expected"] = float64(expectedClass)
+		metrics["predicted"] = float64(predictedClass)
+		metrics["training"] = (float64(idx) / float64(iterations)) * 100
+		metrics["time to fit"] = float64(endTime.Sub(startTime).Microseconds())
+		metrics["error rate"] = float64(errors.Count()) / float64(errors.Len())
 
-		trainer.notify(func(obs IObserver) { obs.OnUpdate(idx) })
+		trainer.notify(func(obs IObserver) { obs.OnUpdate(&metrics) })
 
-		<-trainer.ticker.C
+		if idx >= iterations || trainer.stopped {
+			break
+		} else {
+			<-trainer.ticker.C
+		}
 	}
 	trainer.notify(func(obs IObserver) { obs.OnStop() })
+}
+
+func (trainer *Trainer) Stop() {
+	trainer.stopped = true
 }
 
 func NewTrainer(model IModel, dataset IDataset, csts *utils.Constants) *Trainer {
@@ -85,9 +98,8 @@ func NewTrainer(model IModel, dataset IDataset, csts *utils.Constants) *Trainer 
 		dataset:     dataset,
 		constants:   csts,
 		observers:   []IObserver{},
-		waitingTime: 0,
+		waitingTime: 1,
 		ticker:      time.NewTicker(1),
-		metrics:     make(map[string]float64),
 	}
 	return app
 }

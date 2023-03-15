@@ -27,7 +27,7 @@ var trainCmd = &cobra.Command{
 		model := buildModel(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
 		observer.NewTrainingObserver(trainer, csts)
-		trainer.Train(1)
+		trainer.Start(10000)
 	},
 }
 

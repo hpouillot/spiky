@@ -39,14 +39,14 @@ func (d *Dataset) Cycle(iterations int) chan core.Sample {
 	return ch
 }
 
+func (d *Dataset) Get(idx int) core.Sample {
+	return d.get(idx % d.len)
+}
+
 func (d *Dataset) Len() int {
 	return d.len
 }
 
 func (d *Dataset) Shape() (int, int) {
 	return d.shape.X, d.shape.Y
-}
-
-func (d *Dataset) Get(idx int) core.Sample {
-	return d.get(idx)
 }
