@@ -1,4 +1,4 @@
-package training
+package widget
 
 import (
 	"image"
@@ -11,6 +11,10 @@ type SpikeWidget struct {
 	termui.Block
 	layer      *core.Layer
 	timeWindow int
+}
+
+func (m *SpikeWidget) SetLayer(layer *core.Layer) {
+	m.layer = layer
 }
 
 func (m *SpikeWidget) Draw(buf *termui.Buffer) {

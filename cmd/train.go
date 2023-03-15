@@ -5,8 +5,9 @@ package cmd
 
 import (
 	"spiky/pkg/core"
+	"spiky/pkg/core/codec"
 	"spiky/pkg/data"
-	"spiky/pkg/training"
+	"spiky/pkg/observer"
 	"spiky/pkg/utils"
 
 	"github.com/sirupsen/logrus"
@@ -24,24 +25,22 @@ var trainCmd = &cobra.Command{
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
 		model := buildModel(inputSize, outputSize, csts)
-
-		app := training.NewTrainingApp(model, dataset, csts)
-		defer app.Close()
-		app.Open()
-		app.Start(55000)
+		trainer := core.NewTrainer(model, dataset, csts)
+		trObserver := observer.NewTrainingObserver(csts)
+		pbObserver := observer.NewProgressBarObserver()
+		trainer.Subscribe(pbObserver)
+		trainer.Subscribe(trObserver)
+		trainer.Train(0.1)
 	},
 }
 
-func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.Model {
-	codec := core.NewLatencyCodec(csts)
+func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+	codec := codec.NewLatencyCodec(csts)
 	input := core.NewLayer("Input", inputSize)
-	// hidden1 := core.NewLayer("Hidden 1", 100)
-	// core.DenseConnection(input, hidden1, csts)
 	output := core.NewLayer("Output", outputSize)
 	core.DenseConnection(input, output, csts)
 	layers := []*core.Layer{
 		input,
-		// hidden1,
 		output,
 	}
 	model := core.NewSampleModel(codec, layers, csts)

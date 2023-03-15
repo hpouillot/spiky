@@ -1,5 +1,7 @@
 package data
 
+import "spiky/pkg/core"
+
 func NewNumberDataset(XSamples []byte, YSamples []byte) *Dataset {
 	if len(XSamples) != len(YSamples) {
 		panic("Samples must have the same size")
@@ -13,8 +15,8 @@ func NewNumberDataset(XSamples []byte, YSamples []byte) *Dataset {
 		ySamples[idx] = []byte{Y}
 	}
 	return &Dataset{
-		get: func(idx int) Sample {
-			return Sample{
+		get: func(idx int) core.Sample {
+			return core.Sample{
 				X: []byte{XSamples[idx]},
 				Y: []byte{YSamples[idx]},
 			}

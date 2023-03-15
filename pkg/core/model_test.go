@@ -3,6 +3,7 @@ package core
 import (
 	"os"
 	"reflect"
+	"spiky/pkg/core/codec"
 	"spiky/pkg/utils"
 	"testing"
 
@@ -19,7 +20,7 @@ func TestMain(m *testing.M) {
 func TestModelCreation(t *testing.T) {
 	csts := utils.NewDefaultConstants()
 	output_size := 2
-	codec := NewLatencyCodec(csts)
+	codec := codec.NewLatencyCodec(csts)
 	input := NewLayer("Input", 2)
 	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
@@ -36,7 +37,7 @@ func TestModelVisit(t *testing.T) {
 	input := NewLayer("Input", 2)
 	hidden := NewLayer("Hidden", 10)
 	output := NewLayer("Output", 10)
-	codec := NewLatencyCodec(csts)
+	codec := codec.NewLatencyCodec(csts)
 	DenseConnection(input, hidden, csts)
 	DenseConnection(hidden, output, csts)
 	model := NewSampleModel(codec, []*Layer{input, hidden, output}, csts)

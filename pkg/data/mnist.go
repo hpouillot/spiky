@@ -2,6 +2,7 @@ package data
 
 import (
 	"path"
+	"spiky/pkg/core"
 
 	loader "github.com/moverest/mnist"
 )
@@ -25,10 +26,10 @@ func NewMnist(folder string) *Dataset {
 			Y: 10,
 		},
 		len: len(images),
-		get: func(idx int) Sample {
+		get: func(idx int) core.Sample {
 			xValues := make([]byte, 10)
 			xValues[labels[idx]] = 255
-			return Sample{
+			return core.Sample{
 				X: []byte((*images[idx])[:]),
 				Y: xValues,
 			}

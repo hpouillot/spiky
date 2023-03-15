@@ -1,11 +1,6 @@
 package data
 
-type Generator[T interface{}] chan T
-
-type Sample struct {
-	X []byte
-	Y []byte
-}
+import "spiky/pkg/core"
 
 type Shape struct {
 	X int
@@ -15,24 +10,24 @@ type Shape struct {
 type Dataset struct {
 	len   int
 	shape Shape
-	get   func(idx int) Sample
+	get   func(idx int) core.Sample
 }
 
-func (d *Dataset) Iter() Generator[Sample] {
-	ch := make(Generator[Sample])
+func (d *Dataset) Iter(iteration int) chan core.Sample {
+	ch := make(chan core.Sample)
 
 	go func(iter int) {
 		for i := 0; i < iter; i++ {
 			ch <- d.get(i)
 		}
 		close(ch)
-	}(d.len)
+	}(iteration)
 
 	return ch
 }
 
-func (d *Dataset) Cycle(iterations int) Generator[Sample] {
-	ch := make(Generator[Sample])
+func (d *Dataset) Cycle(iterations int) chan core.Sample {
+	ch := make(chan core.Sample)
 
 	go func(iter int) {
 		for i := 0; i < iter; i++ {
@@ -52,6 +47,6 @@ func (d *Dataset) Shape() (int, int) {
 	return d.shape.X, d.shape.Y
 }
 
-func (d *Dataset) Get(idx int) Sample {
+func (d *Dataset) Get(idx int) core.Sample {
 	return d.get(idx)
 }

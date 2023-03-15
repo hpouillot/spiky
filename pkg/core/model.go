@@ -5,7 +5,7 @@ import (
 	"spiky/pkg/utils"
 )
 
-type Model interface {
+type IModel interface {
 	GetInput() *Layer
 	GetOutput() *Layer
 	GetAllLayer() []*Layer

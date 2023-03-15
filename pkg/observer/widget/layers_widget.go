@@ -1,4 +1,4 @@
-package training
+package widget
 
 import (
 	"fmt"
