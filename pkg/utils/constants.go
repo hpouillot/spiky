@@ -15,11 +15,11 @@ func NewDefaultConstants() *Constants {
 	return &Constants{
 		MinWeight:        -20,
 		MaxWeight:        20,
-		LearningRate:     0.001,
+		LearningRate:     0.01,
 		Threshold:        200.0,
 		RefractoryPeriod: 10.0,
 		Tho:              5.0,
-		MaxDelay:         1.0,
+		MaxDelay:         10.0,
 		MaxTime:          10.0,
 	}
 }

@@ -14,11 +14,11 @@ func TestModelFitting(t *testing.T) {
 	csts := utils.NewDefaultConstants()
 	model := buildModel(inputSize, outputSize, csts)
 	trainer := core.NewTrainer(model, dataset, csts)
-	trainer.Train(1)
+	trainer.Start(1)
 }
 
 func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
-	codec := codec.NewLatencyCodec(csts)
+	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	output := core.NewLayer("Output", outputSize)
 	core.DenseConnection(input, output, csts)

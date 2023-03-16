@@ -11,10 +11,10 @@ type IModel interface {
 	GetAllLayer() []*Layer
 	GetLayer(idx int) *Layer
 	Len() int
-	Encode(input []byte)
-	Decode() []byte
+	Encode(input []float64)
+	Decode() []float64
 	Run()
-	Adjust(output []byte) float64
+	Adjust(output []float64) float64
 	Reset()
 }
 
@@ -64,7 +64,7 @@ func (model *SampleModel) Reset() {
 	model.world.Reset()
 }
 
-func (model *SampleModel) Encode(x []byte) {
+func (model *SampleModel) Encode(x []float64) {
 	input := model.GetInput()
 	input.Visit(func(idx int, node *Neuron) {
 		spikes := model.codec.Encode(x[idx])
@@ -74,9 +74,9 @@ func (model *SampleModel) Encode(x []byte) {
 	})
 }
 
-func (model *SampleModel) Decode() []byte {
+func (model *SampleModel) Decode() []float64 {
 	output := model.GetOutput()
-	y := make([]byte, output.Size())
+	y := make([]float64, output.Size())
 	output.Visit(func(idx int, node *Neuron) {
 		y[idx] = model.codec.Decode(node.spikes)
 	})
@@ -88,7 +88,7 @@ func (model *SampleModel) Run() {
 	}
 }
 
-func (model *SampleModel) Adjust(y []byte) float64 {
+func (model *SampleModel) Adjust(y []float64) float64 {
 	loss := 0.0
 	model.GetOutput().Visit(func(idx int, node *Neuron) {
 		expectedSpikes := model.codec.Encode(y[idx])

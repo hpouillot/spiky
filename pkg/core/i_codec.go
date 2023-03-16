@@ -1,11 +1,11 @@
 package core
 
 type IEncoder interface {
-	Encode(value byte) []float64 // Schedule spikes for nodes
+	Encode(value float64) []float64 // Schedule spikes for nodes
 }
 
 type IDecoder interface {
-	Decode(spikes []float64) byte
+	Decode(spikes []float64) float64
 }
 
 type ICodec interface {

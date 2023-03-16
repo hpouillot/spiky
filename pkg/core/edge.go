@@ -16,12 +16,12 @@ type Edge struct {
 func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
 		target := edge.target
-		_, err := target.GetLastSpikeTime()
-		// There is a last spike
+		lastSpike, err := target.GetLastSpikeTime()
 		if err == nil {
-			// if lastSpike >= world.GetTime()-world.Const.RefractoryPeriod {
-			return
-			// }
+			// Target already spiked
+			if lastSpike >= world.GetTime()-world.Const.RefractoryPeriod {
+				return
+			}
 		}
 		target.potential += edge.weight
 		if target.potential >= world.Const.Threshold {
@@ -52,6 +52,7 @@ func (edge *Edge) Backward(world *World) {
 func (edge *Edge) Adjust(world *World, err float64) {
 	_, preErr := edge.source.GetLastSpikeTime()
 	if preErr != nil {
+		// source did not spike
 		return
 	}
 	deltaW := err * world.Const.LearningRate
@@ -61,7 +62,7 @@ func (edge *Edge) Adjust(world *World, err float64) {
 func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {
 	edge := &Edge{
 		delay:  rand.Float64() * cst.MaxDelay,
-		weight: 0,
+		weight: utils.ClampFloat(rand.NormFloat64()*(cst.MaxWeight/2), cst.MinWeight, cst.MaxWeight),
 		source: source,
 		target: target,
 	}

@@ -20,12 +20,12 @@ func TestMain(m *testing.M) {
 func TestModelCreation(t *testing.T) {
 	csts := utils.NewDefaultConstants()
 	output_size := 2
-	codec := codec.NewLatencyCodec(csts)
+	codec := codec.NewLatencyCodec(255, csts)
 	input := NewLayer("Input", 2)
 	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
 	model := NewSampleModel(codec, []*Layer{input, output}, csts)
-	model.Encode([]byte{255, 255})
+	model.Encode([]float64{255, 255})
 	model.Run()
 	prediction := model.Decode()
 	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
@@ -37,7 +37,7 @@ func TestModelVisit(t *testing.T) {
 	input := NewLayer("Input", 2)
 	hidden := NewLayer("Hidden", 10)
 	output := NewLayer("Output", 10)
-	codec := codec.NewLatencyCodec(csts)
+	codec := codec.NewLatencyCodec(255, csts)
 	DenseConnection(input, hidden, csts)
 	DenseConnection(hidden, output, csts)
 	model := NewSampleModel(codec, []*Layer{input, hidden, output}, csts)

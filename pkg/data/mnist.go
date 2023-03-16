@@ -27,11 +27,15 @@ func NewMnist(folder string) *Dataset {
 		},
 		len: len(images),
 		get: func(idx int) core.Sample {
-			xValues := make([]byte, 10)
-			xValues[labels[idx]] = 255
+			labelSlice := make([]float64, 10)
+			labelSlice[labels[idx]] = 255
+			imageSlice := make([]float64, 28*28)
+			for idx, b := range images[idx] {
+				imageSlice[idx] = float64(b)
+			}
 			return core.Sample{
-				X: []byte((*images[idx])[:]),
-				Y: xValues,
+				X: imageSlice,
+				Y: labelSlice,
 			}
 		},
 	}

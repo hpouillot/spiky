@@ -8,6 +8,6 @@ type IDataset interface {
 }
 
 type Sample struct {
-	X []byte
-	Y []byte
+	X []float64
+	Y []float64
 }

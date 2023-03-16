@@ -24,20 +24,37 @@ var trainCmd = &cobra.Command{
 		dataset := data.NewMnist("./mnist")
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
-		model := buildModel(inputSize, outputSize, csts)
+		// model := buildPerceptron(inputSize, outputSize, csts)
+		model := buildHiddenLayer(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
 		observer.NewTrainingObserver(trainer, csts)
 		trainer.Start(1)
 	},
 }
 
-func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
-	codec := codec.NewLatencyCodec(csts)
+func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	output := core.NewLayer("Output", outputSize)
 	core.DenseConnection(input, output, csts)
 	layers := []*core.Layer{
 		input,
+		output,
+	}
+	model := core.NewSampleModel(codec, layers, csts)
+	return model
+}
+
+func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+	codec := codec.NewLatencyCodec(125, csts)
+	input := core.NewLayer("Input", inputSize)
+	hidden := core.NewLayer("Hidden", 50)
+	output := core.NewLayer("Output", outputSize)
+	core.DenseConnection(input, hidden, csts)
+	core.DenseConnection(hidden, output, csts)
+	layers := []*core.Layer{
+		input,
+		hidden,
 		output,
 	}
 	model := core.NewSampleModel(codec, layers, csts)

@@ -10,7 +10,7 @@ import (
 
 func TestLatencyCodec(t *testing.T) {
 	constants := utils.NewDefaultConstants()
-	codec := NewLatencyCodec(constants)
+	codec := NewLatencyCodec(255, constants)
 	spikes := codec.Encode(255)
 	if len(spikes) > 1 {
 		t.Error("Invalid spike count")
