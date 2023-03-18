@@ -16,7 +16,6 @@ import (
 
 var Quiet bool
 
-// trainCmd represents the train command
 var trainCmd = &cobra.Command{
 	Use:   "train",
 	Short: "A brief description of your command",
@@ -26,15 +25,15 @@ var trainCmd = &cobra.Command{
 		dataset := data.NewMnist("./mnist")
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
-		// model := buildHiddenLayer(inputSize, outputSize, csts)
+
 		model := buildPerceptron(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
 		if !Quiet {
 			reporter.NewTrainingReporter(trainer, csts)
 		} else {
 			reporter.NewProgressBarReporter(trainer)
+			reporter.NewLogReporter(trainer)
 		}
-		reporter.NewLogReporter(trainer)
 		trainer.Start(5)
 	},
 }
@@ -46,22 +45,6 @@ func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) *core
 	core.DenseConnection(input, output, csts)
 	layers := []*core.Layer{
 		input,
-		output,
-	}
-	model := core.NewModel(codec, layers, csts)
-	return model
-}
-
-func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) *core.Model {
-	codec := codec.NewLatencyCodec(255, csts)
-	input := core.NewLayer("Input", inputSize)
-	hidden := core.NewLayer("Hidden", 50)
-	output := core.NewLayer("Output", outputSize)
-	core.DenseConnection(input, hidden, csts)
-	core.DenseConnection(hidden, output, csts)
-	layers := []*core.Layer{
-		input,
-		hidden,
 		output,
 	}
 	model := core.NewModel(codec, layers, csts)

@@ -9,7 +9,7 @@ import (
 )
 
 type LayersWidget struct {
-	widgets.List
+	*widgets.List
 	layers []*core.Layer
 }
 
@@ -28,8 +28,9 @@ func NewLayersWidget(layers []*core.Layer) *LayersWidget {
 	listWidget.WrapText = false
 	listWidget.SelectedRowStyle = termui.NewStyle(termui.ColorCyan)
 
-	return &LayersWidget{
-		List:   *listWidget,
+	widget := &LayersWidget{
+		List:   listWidget,
 		layers: layers,
 	}
+	return widget
 }
