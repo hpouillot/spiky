@@ -54,11 +54,12 @@ func (trainer *Trainer) Start(epochs int) {
 
 	trainer.notify(func(obs IObserver) { obs.OnStart(model, dataset) })
 	var metrics map[string]float64 = make(map[string]float64)
-
+	var sample Sample
 	for i := 0; i < epochs; i++ {
 		idx := 0
 		trainer.notify(func(obs IObserver) { obs.OnEpochStart(datasetSize) })
-		for sample := range trainer.dataset.Cycle(datasetSize) {
+		for j := 0; j < datasetSize; j++ {
+			sample = dataset.Get(j)
 			idx++
 			startTime := time.Now()
 			model.Reset()

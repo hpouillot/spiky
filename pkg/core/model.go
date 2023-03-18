@@ -53,9 +53,9 @@ func (model *Model) Reset() {
 func (model *Model) Encode(x []float64) {
 	input := model.GetInput()
 	input.Visit(func(idx int, node *Neuron) {
-		spikes := model.codec.Encode(x[idx])
-		for _, time := range spikes {
-			model.World.Schedule(time, node.Fire)
+		spikeTime := model.codec.Encode(&x[idx])
+		if spikeTime != nil {
+			model.World.Schedule(*spikeTime, node.Fire)
 		}
 	})
 }
@@ -64,7 +64,7 @@ func (model *Model) Decode() []float64 {
 	output := model.GetOutput()
 	y := make([]float64, output.Size())
 	output.Visit(func(idx int, node *Neuron) {
-		y[idx] = model.codec.Decode(node.spikes)
+		y[idx] = *model.codec.Decode(node.GetSpikeTime())
 	})
 	return y
 }
@@ -76,17 +76,16 @@ func (model *Model) Run() {
 
 func (model *Model) Adjust(y []float64) float64 {
 	model.GetOutput().Visit(func(idx int, node *Neuron) {
-		expectedSpikes := model.codec.Encode(y[idx])
-		lastSpike, err := node.GetLastSpikeTime()
-		if err != nil {
-			lastSpike = model.World.Const.MaxTime
+		expectedSpikeTime := model.codec.Encode(&y[idx])
+		spikeTime := node.GetSpikeTime()
+		if spikeTime == nil {
+			spikeTime = &model.World.Const.MaxTime
 		}
-		lastExpectedSpike := model.World.Const.MaxTime
-		if len(expectedSpikes) != 0 {
-			lastExpectedSpike = expectedSpikes[0]
+		if expectedSpikeTime == nil {
+			node.Adjust(model.World, *spikeTime-model.World.Const.MaxTime)
+		} else {
+			node.Adjust(model.World, *spikeTime-*expectedSpikeTime)
 		}
-
-		node.Adjust(model.World, lastSpike-lastExpectedSpike)
 	})
 	return 0.0
 }

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"math"
 	"math/rand"
 	"spiky/pkg/utils"
 )
@@ -15,37 +14,18 @@ type Edge struct {
 
 func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
-		edge.target.Receive(world)
+		edge.target.Receive(world, edge.weight)
 	})
 }
 
-func (edge *Edge) Backward(world *World) {
-	preSpike, preErr := edge.source.GetLastSpikeTime()
-	if preErr != nil {
-		return
-	}
-	postSpike, postErr := edge.target.GetLastSpikeTime()
-	if postErr != nil {
-		return
-	}
-	deltaT := postSpike - preSpike
-	Ap := 10.0
-	Am := 5.0
-	if deltaT >= 0 {
-		edge.weight += Ap * world.Const.LearningRate * math.Exp(-deltaT/world.Const.Tho) * (world.Const.MaxWeight - edge.weight)
-	} else {
-		edge.weight -= Am * world.Const.LearningRate * math.Exp(deltaT/world.Const.Tho) * (edge.weight - world.Const.MinWeight)
-	}
-}
-
 func (edge *Edge) Adjust(world *World, err float64) {
-	_, preErr := edge.source.GetLastSpikeTime()
-	if preErr != nil {
-		// source did not spike
+	spikeTime := edge.source.GetSpikeTime()
+	if spikeTime == nil {
 		return
 	}
 	deltaW := err * world.Const.LearningRate
 	edge.weight = utils.ClampFloat(edge.weight+deltaW, world.Const.MinWeight, world.Const.MaxWeight)
+	edge.source.Adjust(world, err)
 }
 
 func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {

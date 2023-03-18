@@ -26,6 +26,7 @@ var trainCmd = &cobra.Command{
 		dataset := data.NewMnist("./mnist")
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
+		// model := buildHiddenLayer(inputSize, outputSize, csts)
 		model := buildPerceptron(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
 		if !Quiet {
