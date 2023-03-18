@@ -1,19 +1,21 @@
 package test
 
 import (
+	"spiky/pkg/codec"
 	"spiky/pkg/core"
-	"spiky/pkg/core/codec"
 	"spiky/pkg/data"
+	"spiky/pkg/reporter"
 	"spiky/pkg/utils"
 	"testing"
 )
 
 func TestModelFitting(t *testing.T) {
-	dataset := data.NewMnist("/Users/huguespouillot/go/src/spiky/mnist")
+	dataset := data.NewNumberDataset([]float64{100, 200}, []float64{1, 2})
 	inputSize, outputSize := dataset.Shape()
 	csts := utils.NewDefaultConstants()
 	model := buildModel(inputSize, outputSize, csts)
 	trainer := core.NewTrainer(model, dataset, csts)
+	reporter.NewLogReporter(trainer)
 	trainer.Start(1)
 }
 

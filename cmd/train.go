@@ -4,8 +4,8 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"spiky/pkg/codec"
 	"spiky/pkg/core"
-	"spiky/pkg/core/codec"
 	"spiky/pkg/data"
 	"spiky/pkg/reporter"
 	"spiky/pkg/utils"

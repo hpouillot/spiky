@@ -3,7 +3,7 @@ package core
 import (
 	"os"
 	"reflect"
-	"spiky/pkg/core/codec"
+	"spiky/pkg/codec"
 	"spiky/pkg/utils"
 	"testing"
 
@@ -29,7 +29,7 @@ func TestModelCreation(t *testing.T) {
 	model.Run()
 	prediction := model.Decode()
 	assert.Equal(t, len(prediction), output_size, "Invalid prediction size")
-	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Uint8)
+	assert.Equal(t, reflect.TypeOf(prediction[0]).Kind(), reflect.Float64)
 }
 
 func TestModelVisit(t *testing.T) {

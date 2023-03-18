@@ -31,7 +31,7 @@ func (edge *Edge) Adjust(world *World, err float64) {
 func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {
 	edge := &Edge{
 		delay:  rand.Float64() * cst.MaxDelay,
-		weight: utils.ClampFloat(rand.NormFloat64()*(cst.MaxWeight/2), cst.MinWeight, cst.MaxWeight),
+		weight: rand.Float64(),
 		source: source,
 		target: target,
 	}
