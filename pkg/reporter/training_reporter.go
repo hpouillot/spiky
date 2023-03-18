@@ -1,15 +1,15 @@
-package observer
+package reporter
 
 import (
 	"spiky/pkg/core"
-	"spiky/pkg/observer/widget"
+	"spiky/pkg/reporter/widget"
 	"spiky/pkg/utils"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/sirupsen/logrus"
 )
 
-type TrainingObserver struct {
+type TrainingReporter struct {
 	trainer *core.Trainer
 
 	model   core.IModel
@@ -22,7 +22,7 @@ type TrainingObserver struct {
 	metricsWidget *widget.MetricsWidget
 }
 
-func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, iterations int) {
+func (obs *TrainingReporter) OnStart(model core.IModel, dataset core.IDataset, iterations int) {
 	if err := ui.Init(); err != nil {
 		logrus.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -50,7 +50,7 @@ func (obs *TrainingObserver) OnStart(model core.IModel, dataset core.IDataset, i
 	go obs.observe()
 }
 
-func (app *TrainingObserver) observe() {
+func (app *TrainingReporter) observe() {
 	for e := range ui.PollEvents() {
 		if e.Type == ui.KeyboardEvent {
 			switch e.ID {
@@ -80,25 +80,25 @@ func (app *TrainingObserver) observe() {
 	}
 }
 
-func (app *TrainingObserver) OnUpdate(metrics *map[string]float64) {
+func (app *TrainingReporter) OnUpdate(metrics *map[string]float64) {
 	for k, v := range *metrics {
 		app.metricsWidget.Set(k, v)
 	}
 	app.render()
 }
 
-func (app *TrainingObserver) OnStop() {
+func (app *TrainingReporter) OnStop() {
 	ui.Close()
 }
 
-func (app *TrainingObserver) render() {
+func (app *TrainingReporter) render() {
 	ui.Render(app.grid)
 }
 
-func NewTrainingObserver(trainer *core.Trainer, csts *utils.Constants) *TrainingObserver {
+func NewTrainingReporter(trainer *core.Trainer, csts *utils.Constants) *TrainingReporter {
 	metrics := make(map[string]float64)
 	metrics["speed"] = float64(100)
-	app := &TrainingObserver{
+	app := &TrainingReporter{
 		trainer: trainer,
 		model:   nil,
 		dataset: nil,

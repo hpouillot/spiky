@@ -7,12 +7,14 @@ import (
 	"spiky/pkg/core"
 	"spiky/pkg/core/codec"
 	"spiky/pkg/data"
-	"spiky/pkg/observer"
+	"spiky/pkg/reporter"
 	"spiky/pkg/utils"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+var Quiet bool
 
 // trainCmd represents the train command
 var trainCmd = &cobra.Command{
@@ -25,9 +27,13 @@ var trainCmd = &cobra.Command{
 		inputSize, outputSize := dataset.Shape()
 		csts := utils.NewDefaultConstants()
 		model := buildPerceptron(inputSize, outputSize, csts)
-		// model := buildHiddenLayer(inputSize, outputSize, csts)
 		trainer := core.NewTrainer(model, dataset, csts)
-		observer.NewTrainingObserver(trainer, csts)
+		if !Quiet {
+			reporter.NewTrainingReporter(trainer, csts)
+		} else {
+			reporter.NewProgressBarReporter(trainer)
+		}
+		reporter.NewLogReporter(trainer)
 		trainer.Start(1)
 	},
 }
@@ -46,7 +52,7 @@ func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) core.
 }
 
 func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
-	codec := codec.NewLatencyCodec(125, csts)
+	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	hidden := core.NewLayer("Hidden", 50)
 	output := core.NewLayer("Output", outputSize)
@@ -62,5 +68,6 @@ func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) core
 }
 
 func init() {
+	trainCmd.Flags().BoolVarP(&Quiet, "quiet", "q", false, "Start training in quiet mode")
 	rootCmd.AddCommand(trainCmd)
 }

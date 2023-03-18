@@ -1,7 +1,6 @@
 package core
 
 import (
-	"math"
 	"spiky/pkg/utils"
 )
 
@@ -89,7 +88,6 @@ func (model *SampleModel) Run() {
 }
 
 func (model *SampleModel) Adjust(y []float64) float64 {
-	loss := 0.0
 	model.GetOutput().Visit(func(idx int, node *Neuron) {
 		expectedSpikes := model.codec.Encode(y[idx])
 		lastSpike, err := node.GetLastSpikeTime()
@@ -100,8 +98,8 @@ func (model *SampleModel) Adjust(y []float64) float64 {
 		if len(expectedSpikes) != 0 {
 			lastExpectedSpike = expectedSpikes[0]
 		}
+
 		node.Adjust(model.world, lastSpike-lastExpectedSpike)
-		loss += math.Abs(lastSpike - lastExpectedSpike)
 	})
-	return loss
+	return 0.0
 }

@@ -15,18 +15,7 @@ type Edge struct {
 
 func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
-		target := edge.target
-		lastSpike, err := target.GetLastSpikeTime()
-		if err == nil {
-			// Target already spiked
-			if lastSpike >= world.GetTime()-world.Const.RefractoryPeriod {
-				return
-			}
-		}
-		target.potential += edge.weight
-		if target.potential >= world.Const.Threshold {
-			target.Fire(world)
-		}
+		edge.target.Receive(world)
 	})
 }
 
