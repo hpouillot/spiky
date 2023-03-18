@@ -17,7 +17,7 @@ func TestModelFitting(t *testing.T) {
 	trainer.Start(1)
 }
 
-func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+func buildModel(inputSize int, outputSize int, csts *utils.Constants) *core.Model {
 	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	output := core.NewLayer("Output", outputSize)
@@ -26,6 +26,6 @@ func buildModel(inputSize int, outputSize int, csts *utils.Constants) core.IMode
 		input,
 		output,
 	}
-	model := core.NewSampleModel(codec, layers, csts)
+	model := core.NewModel(codec, layers, csts)
 	return model
 }

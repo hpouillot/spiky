@@ -25,6 +25,7 @@ func (edge *Edge) Adjust(world *World, err float64) {
 	}
 	deltaW := err * world.Const.LearningRate
 	edge.weight = utils.ClampFloat(edge.weight+deltaW, world.Const.MinWeight, world.Const.MaxWeight)
+	edge.source.Adjust(world, err)
 }
 
 func NewEdge(source *Neuron, target *Neuron, cst *utils.Constants) *Edge {
