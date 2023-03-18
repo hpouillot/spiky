@@ -62,20 +62,19 @@ func (trainer *Trainer) Start(epochs float64) {
 		model.Reset()
 		model.Encode(sample.X)
 		model.Run()
-		loss := model.Adjust(sample.Y)
+		model.Adjust(sample.Y)
 		endTime := time.Now()
 		predictions := model.Decode()
 		predictedClass := slice.ArgMax(predictions)
 		expectedClass := slice.ArgMax(sample.Y)
 		errors.Push(predictedClass != expectedClass)
 
-		metrics["idx"] = float64(idx)
-		metrics["loss"] = loss
-		metrics["expected"] = float64(expectedClass)
-		metrics["predicted"] = float64(predictedClass)
-		metrics["training"] = (float64(idx) / float64(iterations)) * 100
-		metrics["time to fit"] = float64(endTime.Sub(startTime).Microseconds())
-		metrics["error rate"] = float64(errors.Count()) / float64(errors.Len())
+		metrics["0. step"] = float64(idx)
+		metrics["1. success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
+		metrics["3. expected"] = float64(expectedClass)
+		metrics["4. predicted"] = float64(predictedClass)
+		metrics["5. completion"] = (float64(idx) / float64(iterations)) * 100
+		metrics["6. fit duration"] = float64(endTime.Sub(startTime).Microseconds())
 
 		trainer.notify(func(obs IObserver) { obs.OnUpdate(&metrics) })
 
