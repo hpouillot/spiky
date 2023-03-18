@@ -29,5 +29,5 @@ func (codec *LatencyCodec) Decode(spikes []float64) float64 {
 		firstSpikeTime = time
 		break
 	}
-	return ((codec.constants.MaxTime - firstSpikeTime) / codec.constants.MaxTime) * codec.maxValue
+	return ((codec.constants.MaxTime - math.Min(firstSpikeTime, codec.constants.MaxTime)) / codec.constants.MaxTime) * codec.maxValue
 }
