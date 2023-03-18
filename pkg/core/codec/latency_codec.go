@@ -24,7 +24,6 @@ func (codec *LatencyCodec) Encode(value float64) []float64 {
 		return []float64{}
 	}
 	time := -(math.Log(value/codec.maxValue) * codec.tho)
-	// ((codec.maxValue - math.Min(value, codec.maxValue)) / codec.maxValue) * codec.constants.MaxTime
 	spikes := []float64{time}
 	return spikes
 }
@@ -37,5 +36,4 @@ func (codec *LatencyCodec) Decode(spikes []float64) float64 {
 	}
 	value := math.Exp(-firstSpikeTime/codec.tho) * codec.maxValue
 	return value
-	// return ((codec.constants.MaxTime - math.Min(firstSpikeTime, codec.constants.MaxTime)) / codec.constants.MaxTime) * codec.maxValue
 }
