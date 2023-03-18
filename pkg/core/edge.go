@@ -19,9 +19,8 @@ func (edge *Edge) Forward(world *World) {
 }
 
 func (edge *Edge) Adjust(world *World, err float64) {
-	_, preErr := edge.source.GetLastSpikeTime()
-	if preErr != nil {
-		// source did not spike
+	spikeTime := edge.source.GetSpikeTime()
+	if spikeTime == nil {
 		return
 	}
 	deltaW := err * world.Const.LearningRate

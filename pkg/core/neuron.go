@@ -1,31 +1,21 @@
 package core
 
-import (
-	"errors"
-)
-
 type Neuron struct {
 	id        string
 	potential float64
-	spikes    []float64
+	spikeTime *float64
 	synapses  []*Edge
 	dendrites []*Edge
 }
 
-func (neuron *Neuron) GetSpikes() []float64 {
-	return neuron.spikes
-}
-
-func (neuron *Neuron) GetLastSpikeTime() (float64, error) {
-	spikeLength := len(neuron.spikes)
-	if spikeLength == 0 {
-		return 0, errors.New("no spike")
-	}
-	return neuron.spikes[len((neuron.spikes))-1], nil
+func (neuron *Neuron) GetSpikeTime() *float64 {
+	return neuron.spikeTime
 }
 
 func (neuron *Neuron) Fire(world *World) {
-	neuron.spikes = append(neuron.spikes, world.GetTime())
+	// var currentTime *float64 =
+	neuron.spikeTime = new(float64)
+	*neuron.spikeTime = world.GetTime()
 	for _, syn := range neuron.synapses {
 		syn.Forward(world)
 	}
@@ -34,8 +24,7 @@ func (neuron *Neuron) Fire(world *World) {
 }
 
 func (neuron *Neuron) Receive(world *World, signal float64) {
-	_, err := neuron.GetLastSpikeTime()
-	if err == nil {
+	if neuron.spikeTime != nil {
 		return
 	}
 	neuron.potential = neuron.potential + signal
@@ -53,14 +42,14 @@ func (neuron *Neuron) Adjust(world *World, err float64) {
 
 func (n *Neuron) Reset() {
 	n.potential = 0
-	n.spikes = nil
+	n.spikeTime = nil
 }
 
 func NewNeuron(id string) *Neuron {
 	return &Neuron{
 		id:        id,
 		potential: 0.0,
-		spikes:    []float64{},
+		spikeTime: nil,
 		synapses:  []*Edge{},
 		dendrites: []*Edge{},
 	}

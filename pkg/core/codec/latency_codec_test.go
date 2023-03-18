@@ -11,17 +11,14 @@ import (
 func TestLatencyCodec(t *testing.T) {
 	constants := utils.NewDefaultConstants()
 	codec := NewLatencyCodec(255, constants)
-	spikes := codec.Encode(155)
-	if len(spikes) > 1 {
-		t.Error("Invalid spike count")
-	}
-	fmt.Println(spikes)
-	assert.GreaterOrEqual(t, spikes[0], 0.0)
-	assert.LessOrEqual(t, spikes[0], 10.0)
+	value := 155.0
+	time := codec.Encode(&value)
+	fmt.Println(time)
+	assert.GreaterOrEqual(t, *time, 0.0)
+	assert.LessOrEqual(t, *time, 10.0)
 
-	spikesToDecode := []float64{2.1555}
-	value := codec.Decode(spikesToDecode)
-	// fmt.Print(value)
-	assert.GreaterOrEqual(t, value, float64(100))
-	assert.LessOrEqual(t, value, float64(200))
+	timeToDecode := 2.1555
+	decodedValue := codec.Decode(&timeToDecode)
+	assert.GreaterOrEqual(t, *decodedValue, 50.0)
+	assert.LessOrEqual(t, *decodedValue, 200.0)
 }

@@ -19,21 +19,18 @@ type LatencyCodec struct {
 	constants *utils.Constants
 }
 
-func (codec *LatencyCodec) Encode(value float64) []float64 {
-	if value == 0 {
-		return []float64{}
+func (codec *LatencyCodec) Encode(value *float64) *float64 {
+	if value == nil || *value == 0 {
+		return nil
 	}
-	time := -(math.Log(value/codec.maxValue) * codec.tho)
-	spikes := []float64{time}
-	return spikes
+	time := -(math.Log(*value/codec.maxValue) * codec.tho)
+	return &time
 }
 
-func (codec *LatencyCodec) Decode(spikes []float64) float64 {
-	firstSpikeTime := codec.constants.MaxTime
-	for _, time := range spikes {
-		firstSpikeTime = time
-		break
+func (codec *LatencyCodec) Decode(time *float64) *float64 {
+	if time == nil {
+		return new(float64)
 	}
-	value := math.Exp(-firstSpikeTime/codec.tho) * codec.maxValue
-	return value
+	value := math.Exp(-*time/codec.tho) * codec.maxValue
+	return &value
 }
