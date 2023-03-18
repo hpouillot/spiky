@@ -1,7 +1,6 @@
 package core
 
 import (
-	"math"
 	"math/rand"
 	"spiky/pkg/utils"
 )
@@ -17,25 +16,6 @@ func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
 		edge.target.Receive(world)
 	})
-}
-
-func (edge *Edge) Backward(world *World) {
-	preSpike, preErr := edge.source.GetLastSpikeTime()
-	if preErr != nil {
-		return
-	}
-	postSpike, postErr := edge.target.GetLastSpikeTime()
-	if postErr != nil {
-		return
-	}
-	deltaT := postSpike - preSpike
-	Ap := 10.0
-	Am := 5.0
-	if deltaT >= 0 {
-		edge.weight += Ap * world.Const.LearningRate * math.Exp(-deltaT/world.Const.Tho) * (world.Const.MaxWeight - edge.weight)
-	} else {
-		edge.weight -= Am * world.Const.LearningRate * math.Exp(deltaT/world.Const.Tho) * (edge.weight - world.Const.MinWeight)
-	}
 }
 
 func (edge *Edge) Adjust(world *World, err float64) {

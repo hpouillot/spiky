@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"math"
 )
 
 type Neuron struct {
@@ -39,7 +38,7 @@ func (neuron *Neuron) Receive(world *World) {
 	if err == nil {
 		return
 	}
-	potential := neuron.getPotential(world.GetTime())
+	potential := neuron.getPotential(world)
 	if potential >= world.Const.Threshold {
 		neuron.Fire(world)
 	}
@@ -51,12 +50,13 @@ func (neuron *Neuron) Adjust(world *World, err float64) {
 	}
 }
 
-func (neuron *Neuron) getPotential(time float64) float64 {
+func (neuron *Neuron) getPotential(world *World) float64 {
 	potential := 0.0
+	currenTime := world.GetTime()
 	for _, dend := range neuron.dendrites {
 		lastSpikeTime, err := dend.source.GetLastSpikeTime()
 		if err == nil {
-			potential += math.Exp((lastSpikeTime-time)/10) * dend.weight
+			potential += (1 - (lastSpikeTime-currenTime)/world.Const.MaxTime) * dend.weight
 		}
 	}
 	return potential
