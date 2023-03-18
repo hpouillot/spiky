@@ -34,11 +34,11 @@ var trainCmd = &cobra.Command{
 			reporter.NewProgressBarReporter(trainer)
 		}
 		reporter.NewLogReporter(trainer)
-		trainer.Start(1)
+		trainer.Start(5)
 	},
 }
 
-func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) *core.Model {
 	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	output := core.NewLayer("Output", outputSize)
@@ -47,11 +47,11 @@ func buildPerceptron(inputSize int, outputSize int, csts *utils.Constants) core.
 		input,
 		output,
 	}
-	model := core.NewSampleModel(codec, layers, csts)
+	model := core.NewModel(codec, layers, csts)
 	return model
 }
 
-func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) core.IModel {
+func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) *core.Model {
 	codec := codec.NewLatencyCodec(255, csts)
 	input := core.NewLayer("Input", inputSize)
 	hidden := core.NewLayer("Hidden", 50)
@@ -63,7 +63,7 @@ func buildHiddenLayer(inputSize int, outputSize int, csts *utils.Constants) core
 		hidden,
 		output,
 	}
-	model := core.NewSampleModel(codec, layers, csts)
+	model := core.NewModel(codec, layers, csts)
 	return model
 }
 

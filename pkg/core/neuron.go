@@ -56,7 +56,7 @@ func (neuron *Neuron) getPotential(time float64) float64 {
 	for _, dend := range neuron.dendrites {
 		lastSpikeTime, err := dend.source.GetLastSpikeTime()
 		if err == nil {
-			potential += math.Exp((lastSpikeTime-time)/3) * dend.weight
+			potential += math.Exp((lastSpikeTime-time)/10) * dend.weight
 		}
 	}
 	return potential

@@ -12,7 +12,7 @@ import (
 type TrainingReporter struct {
 	trainer *core.Trainer
 
-	model   core.IModel
+	model   *core.Model
 	dataset core.IDataset
 	csts    *utils.Constants
 
@@ -22,7 +22,7 @@ type TrainingReporter struct {
 	metricsWidget *widget.MetricsWidget
 }
 
-func (obs *TrainingReporter) OnStart(model core.IModel, dataset core.IDataset, iterations int) {
+func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 	if err := ui.Init(); err != nil {
 		logrus.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -57,9 +57,11 @@ func (app *TrainingReporter) observe() {
 			case "<Down>":
 				app.layersWidget.ScrollDown()
 				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
+				app.render()
 			case "<Up>":
 				app.layersWidget.ScrollUp()
 				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
+				app.render()
 			case "<Left>":
 				app.trainer.SpeedDown()
 				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
@@ -80,7 +82,15 @@ func (app *TrainingReporter) observe() {
 	}
 }
 
-func (app *TrainingReporter) OnUpdate(metrics *map[string]float64) {
+func (app *TrainingReporter) OnEpochStart(iterations int) {
+
+}
+
+func (app *TrainingReporter) OnEpochEnd() {
+
+}
+
+func (app *TrainingReporter) OnStep(metrics *map[string]float64) {
 	for k, v := range *metrics {
 		app.metricsWidget.Set(k, v)
 	}

@@ -24,7 +24,7 @@ func TestModelCreation(t *testing.T) {
 	input := NewLayer("Input", 2)
 	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
-	model := NewSampleModel(codec, []*Layer{input, output}, csts)
+	model := NewModel(codec, []*Layer{input, output}, csts)
 	model.Encode([]float64{255, 255})
 	model.Run()
 	prediction := model.Decode()
@@ -40,7 +40,7 @@ func TestModelVisit(t *testing.T) {
 	codec := codec.NewLatencyCodec(255, csts)
 	DenseConnection(input, hidden, csts)
 	DenseConnection(hidden, output, csts)
-	model := NewSampleModel(codec, []*Layer{input, hidden, output}, csts)
+	model := NewModel(codec, []*Layer{input, hidden, output}, csts)
 	visitCount := 0
 	model.Visit(func(n *Neuron) {
 		visitCount++

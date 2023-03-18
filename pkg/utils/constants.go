@@ -19,7 +19,7 @@ func NewDefaultConstants() *Constants {
 		Threshold:        200.0,
 		RefractoryPeriod: 10.0,
 		Tho:              5.0,
-		MaxDelay:         0.0,
+		MaxDelay:         1.0,
 		MaxTime:          10.0,
 	}
 }

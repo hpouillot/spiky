@@ -9,7 +9,7 @@ import (
 )
 
 type Trainer struct {
-	model     IModel
+	model     *Model
 	dataset   IDataset
 	observers []IObserver
 	constants *utils.Constants
@@ -43,46 +43,52 @@ func (trainer *Trainer) SpeedUp() {
 	trainer.ticker = time.NewTicker(time.Duration(trainer.waitingTime) * time.Millisecond)
 }
 
-func (trainer *Trainer) Start(epochs float64) {
-	idx := 0
+func (trainer *Trainer) Start(epochs int) {
+
 	trainer.stopped = false
 	model := trainer.model
 	dataset := trainer.dataset
 	datasetSize := trainer.dataset.Len()
-	iterations := int(float64(datasetSize) * epochs)
 	queueSize := 1000
 	errors := utils.NewBooleanQueue(queueSize)
 
-	trainer.notify(func(obs IObserver) { obs.OnStart(model, dataset, iterations) })
+	trainer.notify(func(obs IObserver) { obs.OnStart(model, dataset) })
 	var metrics map[string]float64 = make(map[string]float64)
 
-	for sample := range trainer.dataset.Cycle(iterations) {
-		idx++
-		startTime := time.Now()
-		model.Reset()
-		model.Encode(sample.X)
-		model.Run()
-		model.Adjust(sample.Y)
-		endTime := time.Now()
-		predictions := model.Decode()
-		predictedClass := slice.ArgMax(predictions)
-		expectedClass := slice.ArgMax(sample.Y)
-		errors.Push(predictedClass != expectedClass)
+	for i := 0; i < epochs; i++ {
+		idx := 0
+		trainer.notify(func(obs IObserver) { obs.OnEpochStart(datasetSize) })
+		for sample := range trainer.dataset.Cycle(datasetSize) {
+			idx++
+			startTime := time.Now()
+			model.Reset()
+			model.Encode(sample.X)
+			model.Run()
+			model.Adjust(sample.Y)
+			endTime := time.Now()
+			predictions := model.Decode()
+			predictedClass := slice.ArgMax(predictions)
+			expectedClass := slice.ArgMax(sample.Y)
+			errors.Push(predictedClass != expectedClass)
 
-		metrics["0. step"] = float64(idx)
-		metrics["1. success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
-		metrics["3. expected"] = float64(expectedClass)
-		metrics["4. predicted"] = float64(predictedClass)
-		metrics["5. completion"] = (float64(idx) / float64(iterations)) * 100
-		metrics["6. fit duration"] = float64(endTime.Sub(startTime).Microseconds())
+			metrics["1. epoch"] = float64(i)
+			metrics["2. step"] = float64(idx)
+			metrics["3. success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
+			metrics["4. expected"] = float64(expectedClass)
+			metrics["5. predicted"] = float64(predictedClass)
+			metrics["6. completion"] = (float64(idx) / float64(datasetSize)) * 100
+			metrics["7. fit duration"] = float64(endTime.Sub(startTime).Microseconds())
 
-		trainer.notify(func(obs IObserver) { obs.OnUpdate(&metrics) })
+			trainer.notify(func(obs IObserver) { obs.OnStep(&metrics) })
 
-		if idx >= iterations || trainer.stopped {
-			break
-		} else {
-			<-trainer.ticker.C
+			if trainer.stopped {
+				break
+			} else {
+				<-trainer.ticker.C
+			}
 		}
+		trainer.notify(func(obs IObserver) { obs.OnEpochEnd() })
+		model.World.Const.LearningRate = model.World.Const.LearningRate * 0.1
 	}
 	trainer.notify(func(obs IObserver) { obs.OnStop() })
 }
@@ -91,7 +97,7 @@ func (trainer *Trainer) Stop() {
 	trainer.stopped = true
 }
 
-func NewTrainer(model IModel, dataset IDataset, csts *utils.Constants) *Trainer {
+func NewTrainer(model *Model, dataset IDataset, csts *utils.Constants) *Trainer {
 	app := &Trainer{
 		model:       model,
 		dataset:     dataset,
