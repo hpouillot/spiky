@@ -26,40 +26,29 @@ func (neuron *Neuron) GetLastSpikeTime() (float64, error) {
 
 func (neuron *Neuron) Fire(world *World) {
 	neuron.spikes = append(neuron.spikes, world.GetTime())
-	world.markDirty(neuron)
 	for _, syn := range neuron.synapses {
 		syn.Forward(world)
 	}
 	neuron.potential = 0
+	world.markDirty(neuron)
 }
 
-func (neuron *Neuron) Receive(world *World) {
+func (neuron *Neuron) Receive(world *World, signal float64) {
 	_, err := neuron.GetLastSpikeTime()
 	if err == nil {
 		return
 	}
-	potential := neuron.getPotential(world)
-	if potential >= world.Const.Threshold {
+	neuron.potential = neuron.potential + signal
+	if neuron.potential >= world.Const.Threshold {
 		neuron.Fire(world)
 	}
+	world.markDirty(neuron)
 }
 
 func (neuron *Neuron) Adjust(world *World, err float64) {
 	for _, dend := range neuron.dendrites {
 		dend.Adjust(world, err)
 	}
-}
-
-func (neuron *Neuron) getPotential(world *World) float64 {
-	potential := 0.0
-	currenTime := world.GetTime()
-	for _, dend := range neuron.dendrites {
-		lastSpikeTime, err := dend.source.GetLastSpikeTime()
-		if err == nil {
-			potential += (1 - (lastSpikeTime-currenTime)/world.Const.MaxTime) * dend.weight
-		}
-	}
-	return potential
 }
 
 func (n *Neuron) Reset() {

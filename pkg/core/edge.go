@@ -14,7 +14,7 @@ type Edge struct {
 
 func (edge *Edge) Forward(world *World) {
 	world.Schedule(world.GetTime()+edge.delay, func(world *World) {
-		edge.target.Receive(world)
+		edge.target.Receive(world, edge.weight)
 	})
 }
 
