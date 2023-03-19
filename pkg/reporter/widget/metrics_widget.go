@@ -10,20 +10,21 @@ import (
 )
 
 type MetricsWidget struct {
-	widgets.List
+	widgets.Table
 	metrics map[string]float64
 }
 
 func (m *MetricsWidget) Draw(buf *termui.Buffer) {
-	m.Rows = make([]string, len(m.metrics))
+	m.Rows = make([][]string, len(m.metrics)+1)
 	var keys []string = maps.Keys(m.metrics)
 	sort.Strings(keys)
+	m.Rows[0] = []string{"Metrics", "Value"}
 	idx := 0
 	for _, key := range keys {
-		m.Rows[idx] = fmt.Sprintf("%v %.2f", key, m.metrics[key])
+		m.Rows[idx+1] = []string{key, fmt.Sprintf("%.2f", m.metrics[key])}
 		idx++
 	}
-	m.List.Draw(buf)
+	m.Table.Draw(buf)
 }
 
 func (m *MetricsWidget) Set(key string, value float64) {
@@ -36,9 +37,9 @@ func (m *MetricsWidget) Get(key string) float64 {
 
 func NewMetricsWidget() *MetricsWidget {
 	widget := &MetricsWidget{
-		List:    *widgets.NewList(),
+		Table:   *widgets.NewTable(),
 		metrics: map[string]float64{},
 	}
-	widget.Title = "Metrics"
+	
 	return widget
 }

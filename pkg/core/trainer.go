@@ -14,9 +14,9 @@ type Trainer struct {
 	observers []IObserver
 	constants *utils.Constants
 
-	stopped     bool
-	waitingTime int
-	ticker      *time.Ticker
+	stopped bool
+	speed   float64
+	ticker  *time.Ticker
 }
 
 func (t *Trainer) Subscribe(observer IObserver) {
@@ -30,17 +30,17 @@ func (t *Trainer) notify(fn func(obs IObserver)) {
 }
 
 func (trainer *Trainer) SpeedDown() {
-	trainer.waitingTime = utils.ClampInt(int(math.Floor(float64(trainer.waitingTime)*0.9-1)), 1, 10000)
-	trainer.ticker = time.NewTicker(time.Duration(trainer.waitingTime) * time.Millisecond)
-}
-
-func (trainer *Trainer) GetWaitingTime() int {
-	return trainer.waitingTime
+	trainer.speed = utils.ClampFloat(trainer.speed*0.9, 0.0001, 1)
+	trainer.ticker = time.NewTicker(time.Duration(math.Floor(trainer.speed*1000)) * time.Millisecond)
 }
 
 func (trainer *Trainer) SpeedUp() {
-	trainer.waitingTime = utils.ClampInt(int(math.Ceil(float64(trainer.waitingTime)*1.1+1)), 1, 10000)
-	trainer.ticker = time.NewTicker(time.Duration(trainer.waitingTime) * time.Millisecond)
+	trainer.speed = utils.ClampFloat(trainer.speed*1.1, 0.0001, 1)
+	trainer.ticker = time.NewTicker(time.Duration(math.Floor(trainer.speed*1000)) * time.Millisecond)
+}
+
+func (trainer *Trainer) GetSpeed() float64 {
+	return trainer.speed
 }
 
 func (trainer *Trainer) Start(epochs int) {
@@ -72,13 +72,13 @@ func (trainer *Trainer) Start(epochs int) {
 			expectedClass := slice.ArgMax(sample.Y)
 			errors.Push(predictedClass != expectedClass)
 
-			metrics["1. epoch"] = float64(i)
-			metrics["2. step"] = float64(idx)
-			metrics["3. success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
-			metrics["4. expected"] = float64(expectedClass)
-			metrics["5. predicted"] = float64(predictedClass)
-			metrics["6. completion"] = (float64(idx) / float64(datasetSize)) * 100
-			metrics["7. fit duration"] = float64(endTime.Sub(startTime).Microseconds())
+			metrics["epoch"] = float64(i)
+			metrics["step"] = float64(idx)
+			metrics["success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
+			metrics["expected"] = float64(expectedClass)
+			metrics["predicted"] = float64(predictedClass)
+			metrics["completion"] = (float64(idx) / float64(datasetSize)) * 100
+			metrics["fit duration"] = float64(endTime.Sub(startTime).Microseconds())
 
 			trainer.notify(func(obs IObserver) { obs.OnStep(&metrics) })
 
@@ -100,12 +100,12 @@ func (trainer *Trainer) Stop() {
 
 func NewTrainer(model *Model, dataset IDataset, csts *utils.Constants) *Trainer {
 	app := &Trainer{
-		model:       model,
-		dataset:     dataset,
-		constants:   csts,
-		observers:   []IObserver{},
-		waitingTime: 1,
-		ticker:      time.NewTicker(1),
+		model:     model,
+		dataset:   dataset,
+		constants: csts,
+		observers: []IObserver{},
+		speed:     1,
+		ticker:    time.NewTicker(1),
 	}
 	return app
 }

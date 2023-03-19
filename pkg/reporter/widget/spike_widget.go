@@ -33,9 +33,11 @@ func (m *SpikeWidget) Draw(buf *termui.Buffer) {
 }
 
 func NewSpikeWidget(layer *core.Layer, timeWindow int) *SpikeWidget {
-	return &SpikeWidget{
+	widget := &SpikeWidget{
 		Block:      *termui.NewBlock(),
 		layer:      layer,
 		timeWindow: timeWindow,
 	}
+	widget.TitleStyle = termui.NewStyle(termui.ColorYellow)
+	return widget
 }

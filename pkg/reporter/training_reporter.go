@@ -6,6 +6,7 @@ import (
 	"spiky/pkg/utils"
 
 	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,19 @@ type TrainingReporter struct {
 	metricsWidget *widget.MetricsWidget
 }
 
+func NewTrainingReporter(trainer *core.Trainer, csts *utils.Constants) *TrainingReporter {
+	metrics := make(map[string]float64)
+	metrics["speed"] = float64(100)
+	app := &TrainingReporter{
+		trainer: trainer,
+		model:   nil,
+		dataset: nil,
+		csts:    csts,
+	}
+	trainer.Subscribe(app)
+	return app
+}
+
 func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 	if err := ui.Init(); err != nil {
 		logrus.Fatalf("failed to initialize termui: %v", err)
@@ -36,6 +50,10 @@ func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 	obs.spikeWidget = widget.NewSpikeWidget(obs.model.GetInput(), int(obs.csts.MaxTime))
 	obs.layersWidget = widget.NewLayersWidget(obs.model.GetAllLayer())
 	obs.metricsWidget = widget.NewMetricsWidget()
+	obs.metricsWidget.Set("speed", float64(obs.trainer.GetSpeed()))
+
+	noticeWidget := widgets.NewParagraph()
+	noticeWidget.Text = "Select layers: [↑ or ↓](fg:cyan), Change speed: [← or →](fg:green)"
 
 	obs.grid.Set(
 		ui.NewRow(1.0,
@@ -43,43 +61,14 @@ func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 				ui.NewRow(1.0/2, obs.layersWidget),
 				ui.NewRow(1.0/2, obs.metricsWidget),
 			),
-			ui.NewCol(1.0*(5.0/6.0), obs.spikeWidget),
+			ui.NewCol(1.0*(5.0/6.0),
+				ui.NewRow(11.0/12.0, obs.spikeWidget),
+				ui.NewRow(1.0/12.0, noticeWidget),
+			),
 		),
 	)
 
 	go obs.observe()
-}
-
-func (app *TrainingReporter) observe() {
-	for e := range ui.PollEvents() {
-		if e.Type == ui.KeyboardEvent {
-			switch e.ID {
-			case "<Down>":
-				app.layersWidget.ScrollDown()
-				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
-				app.render()
-			case "<Up>":
-				app.layersWidget.ScrollUp()
-				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
-				app.render()
-			case "<Left>":
-				app.trainer.SpeedDown()
-				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
-				app.render()
-			case "<Right>":
-				app.trainer.SpeedUp()
-				app.metricsWidget.Set("waiting time", float64(app.trainer.GetWaitingTime()))
-				app.render()
-			case "q", "<C-c>":
-				app.trainer.Stop()
-			}
-		} else if e.Type == ui.ResizeEvent {
-			payload := e.Payload.(ui.Resize)
-			app.grid.SetRect(0, 0, payload.Width, payload.Height)
-			ui.Clear()
-			app.render()
-		}
-	}
 }
 
 func (app *TrainingReporter) OnEpochStart(iterations int) {
@@ -105,15 +94,34 @@ func (app *TrainingReporter) render() {
 	ui.Render(app.grid)
 }
 
-func NewTrainingReporter(trainer *core.Trainer, csts *utils.Constants) *TrainingReporter {
-	metrics := make(map[string]float64)
-	metrics["speed"] = float64(100)
-	app := &TrainingReporter{
-		trainer: trainer,
-		model:   nil,
-		dataset: nil,
-		csts:    csts,
+func (app *TrainingReporter) observe() {
+	for e := range ui.PollEvents() {
+		if e.Type == ui.KeyboardEvent {
+			switch e.ID {
+			case "<Down>":
+				app.layersWidget.ScrollDown()
+				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
+				app.render()
+			case "<Up>":
+				app.layersWidget.ScrollUp()
+				app.spikeWidget.SetLayer(app.model.GetLayer(app.layersWidget.SelectedRow))
+				app.render()
+			case "<Left>":
+				app.trainer.SpeedDown()
+				app.metricsWidget.Set("speed", app.trainer.GetSpeed())
+				app.render()
+			case "<Right>":
+				app.trainer.SpeedUp()
+				app.metricsWidget.Set("speed", app.trainer.GetSpeed())
+				app.render()
+			case "q", "<C-c>":
+				app.trainer.Stop()
+			}
+		} else if e.Type == ui.ResizeEvent {
+			payload := e.Payload.(ui.Resize)
+			app.grid.SetRect(0, 0, payload.Width, payload.Height)
+			ui.Clear()
+			app.render()
+		}
 	}
-	trainer.Subscribe(app)
-	return app
 }

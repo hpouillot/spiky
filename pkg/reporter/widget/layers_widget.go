@@ -32,5 +32,6 @@ func NewLayersWidget(layers []*core.Layer) *LayersWidget {
 		List:   listWidget,
 		layers: layers,
 	}
+	widget.TitleStyle = termui.NewStyle(termui.ColorYellow)
 	return widget
 }
