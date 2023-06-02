@@ -18,7 +18,7 @@ func (m *MetricsWidget) Draw(buf *termui.Buffer) {
 	m.Rows = make([][]string, len(m.metrics)+1)
 	var keys []string = maps.Keys(m.metrics)
 	sort.Strings(keys)
-	m.Rows[0] = []string{"Metrics", "Value"}
+	m.Rows[0] = []string{"Metric", "Value"}
 	idx := 0
 	for _, key := range keys {
 		m.Rows[idx+1] = []string{key, fmt.Sprintf("%.2f", m.metrics[key])}
@@ -40,6 +40,6 @@ func NewMetricsWidget() *MetricsWidget {
 		Table:   *widgets.NewTable(),
 		metrics: map[string]float64{},
 	}
-	
+
 	return widget
 }

@@ -51,7 +51,7 @@ func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 	obs.metricsWidget.Set("speed", float64(obs.trainer.GetSpeed()))
 
 	noticeWidget := widgets.NewParagraph()
-	noticeWidget.Text = "Select layers: [↑ or ↓](fg:cyan), Change speed: [← or →](fg:green)"
+	noticeWidget.Text = "Select layer: [↑ or ↓](fg:cyan), Change speed: [← or →](fg:green)"
 
 	obs.grid.Set(
 		ui.NewRow(1.0,
