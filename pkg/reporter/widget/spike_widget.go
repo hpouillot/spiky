@@ -18,7 +18,7 @@ func (m *SpikeWidget) SetLayer(layer *core.Layer) {
 }
 
 func (m *SpikeWidget) Draw(buf *termui.Buffer) {
-	m.Title = m.layer.GetName()
+	m.Title = m.layer.GetName() + " Activation"
 	m.Block.Draw(buf)
 	layerSize := m.layer.Size()
 	m.layer.Visit(func(idx int, n *core.Neuron) {

@@ -30,13 +30,18 @@ func (t *Trainer) notify(fn func(obs IObserver)) {
 }
 
 func (trainer *Trainer) SpeedDown() {
-	trainer.speed = utils.ClampFloat(trainer.speed*0.9, 0.0001, 1)
-	trainer.ticker = time.NewTicker(time.Duration(math.Floor(trainer.speed*1000)) * time.Millisecond)
+	trainer.speed = utils.ClampFloat(trainer.speed*0.9, 0.0001, 1.0)
+	trainer.updateTicker()
 }
 
 func (trainer *Trainer) SpeedUp() {
-	trainer.speed = utils.ClampFloat(trainer.speed*1.1, 0.0001, 1)
-	trainer.ticker = time.NewTicker(time.Duration(math.Floor(trainer.speed*1000)) * time.Millisecond)
+	trainer.speed = utils.ClampFloat(trainer.speed*1.1, 0.0001, 1.0)
+	trainer.updateTicker()
+}
+
+func (trainer *Trainer) updateTicker() {
+	delay := time.Duration(1001-math.Floor(trainer.speed*1000)) * time.Millisecond
+	trainer.ticker = time.NewTicker(delay)
 }
 
 func (trainer *Trainer) GetSpeed() float64 {
@@ -61,24 +66,21 @@ func (trainer *Trainer) Start(epochs int) {
 		for j := 0; j < datasetSize; j++ {
 			sample = dataset.Get(j)
 			idx++
-			startTime := time.Now()
 			model.Reset()
 			model.Encode(sample.X)
 			model.Run()
 			model.Adjust(sample.Y)
-			endTime := time.Now()
+
 			predictions := model.Decode()
 			predictedClass := slice.ArgMax(predictions)
 			expectedClass := slice.ArgMax(sample.Y)
 			errors.Push(predictedClass != expectedClass)
 
-			metrics["epoch"] = float64(i)
-			metrics["step"] = float64(idx)
-			metrics["success rate"] = 1.0 - float64(errors.Count())/float64(errors.Len())
-			metrics["expected"] = float64(expectedClass)
-			metrics["predicted"] = float64(predictedClass)
-			metrics["completion"] = (float64(idx) / float64(datasetSize)) * 100
-			metrics["fit duration"] = float64(endTime.Sub(startTime).Microseconds())
+			metrics["1. success %"] = (1.0 - float64(errors.Count())/float64(errors.Len())) * 100
+			metrics["2. epoch"] = float64(i)
+			metrics["3. completion %"] = (float64(idx) / float64(datasetSize)) * 100
+			metrics["4. expected"] = float64(expectedClass)
+			metrics["5. predicted"] = float64(predictedClass)
 
 			trainer.notify(func(obs IObserver) { obs.OnStep(&metrics) })
 
@@ -104,7 +106,7 @@ func NewTrainer(model *Model, dataset IDataset, csts *utils.Constants) *Trainer 
 		dataset:   dataset,
 		constants: csts,
 		observers: []IObserver{},
-		speed:     1,
+		speed:     1.0,
 		ticker:    time.NewTicker(1),
 	}
 	return app

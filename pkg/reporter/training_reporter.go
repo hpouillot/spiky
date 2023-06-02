@@ -24,8 +24,6 @@ type TrainingReporter struct {
 }
 
 func NewTrainingReporter(trainer *core.Trainer, csts *utils.Constants) *TrainingReporter {
-	metrics := make(map[string]float64)
-	metrics["speed"] = float64(100)
 	app := &TrainingReporter{
 		trainer: trainer,
 		model:   nil,
