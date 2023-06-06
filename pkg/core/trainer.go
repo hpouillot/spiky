@@ -4,15 +4,12 @@ import (
 	"math"
 	"spiky/pkg/utils"
 	"time"
-
-	"github.com/aclements/go-gg/generic/slice"
 )
 
 type Trainer struct {
 	model     *Model
 	dataset   IDataset
 	observers []IObserver
-	constants *utils.Constants
 
 	stopped bool
 	speed   float64
@@ -72,8 +69,8 @@ func (trainer *Trainer) Start(epochs int) {
 			model.Adjust(sample.Y)
 
 			predictions := model.Decode()
-			predictedClass := slice.ArgMax(predictions)
-			expectedClass := slice.ArgMax(sample.Y)
+			predictedClass := utils.ArgMax(predictions)
+			expectedClass := utils.ArgMax(sample.Y)
 			errors.Push(predictedClass != expectedClass)
 
 			metrics["1. success %"] = (1.0 - float64(errors.Count())/float64(errors.Len())) * 100
@@ -100,11 +97,10 @@ func (trainer *Trainer) Stop() {
 	trainer.stopped = true
 }
 
-func NewTrainer(model *Model, dataset IDataset, csts *utils.Constants) *Trainer {
+func NewTrainer(model *Model, dataset IDataset) *Trainer {
 	app := &Trainer{
 		model:     model,
 		dataset:   dataset,
-		constants: csts,
 		observers: []IObserver{},
 		speed:     1.0,
 		ticker:    time.NewTicker(1),

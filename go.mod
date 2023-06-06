@@ -3,7 +3,6 @@ module spiky
 go 1.20
 
 require (
-	github.com/aclements/go-gg v0.0.0-20170323211221-abd1f791f5ee
 	github.com/gizak/termui/v3 v3.1.0
 	github.com/jaevor/go-nanoid v1.3.0
 	github.com/moverest/mnist v0.0.0-20160628192128-ec5d9d203b59

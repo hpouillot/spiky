@@ -8,7 +8,7 @@ type Process (func(world *World))
 
 type World struct {
 	time  float64
-	Const *utils.Constants
+	Const *ModelConfig
 	stack *utils.TimeStack[Process]
 
 	dirtyNeurons map[string]*Neuron
@@ -19,7 +19,9 @@ func (w *World) GetTime() float64 {
 }
 
 func (w *World) markDirty(n *Neuron) {
-	w.dirtyNeurons[n.id] = n
+	if _, ok := w.dirtyNeurons[n.id]; !ok {
+		w.dirtyNeurons[n.id] = n
+	}
 }
 
 func (w *World) setTime(time float64) {
@@ -49,10 +51,10 @@ func (w *World) Reset() {
 	w.stack.Reset()
 }
 
-func NewWorld(constants *utils.Constants) *World {
+func NewWorld(config *ModelConfig) *World {
 	return &World{
 		time:         0.0,
-		Const:        constants,
+		Const:        config,
 		stack:        utils.NewTimeStack[Process](),
 		dirtyNeurons: make(map[string]*Neuron),
 	}

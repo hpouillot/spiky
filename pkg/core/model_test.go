@@ -4,7 +4,6 @@ import (
 	"os"
 	"reflect"
 	"spiky/pkg/codec"
-	"spiky/pkg/utils"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -18,9 +17,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestModelCreation(t *testing.T) {
-	csts := utils.NewDefaultConstants()
+	csts := NewDefaultConfig()
 	output_size := 2
-	codec := codec.NewLatencyCodec(255, csts)
+	codec := codec.NewLatencyCodec(255)
 	input := NewLayer("Input", 2)
 	output := NewLayer("Output", output_size)
 	DenseConnection(input, output, csts)
@@ -33,17 +32,22 @@ func TestModelCreation(t *testing.T) {
 }
 
 func TestModelVisit(t *testing.T) {
-	csts := utils.NewDefaultConstants()
+	csts := NewDefaultConfig()
 	input := NewLayer("Input", 2)
 	hidden := NewLayer("Hidden", 10)
 	output := NewLayer("Output", 10)
-	codec := codec.NewLatencyCodec(255, csts)
+	codec := codec.NewLatencyCodec(255)
 	DenseConnection(input, hidden, csts)
 	DenseConnection(hidden, output, csts)
 	model := NewModel(codec, []*Layer{input, hidden, output}, csts)
-	visitCount := 0
-	model.Visit(func(n *Neuron) {
-		visitCount++
+	neuronsCount := 0
+	edgesCount := 0
+	model.VisitNeurons(func(n *Neuron) {
+		neuronsCount++
 	})
-	assert.Equal(t, 22, visitCount, "Invalid neuron visit")
+	model.VisitEdges(func(e *Edge) {
+		edgesCount++
+	})
+	assert.Equal(t, 22, neuronsCount, "Invalid neuron visit")
+	assert.Equal(t, 120, edgesCount, "Invalid neuron visit")
 }

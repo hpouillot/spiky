@@ -3,7 +3,6 @@ package reporter
 import (
 	"spiky/pkg/core"
 	"spiky/pkg/reporter/widget"
-	"spiky/pkg/utils"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
@@ -15,7 +14,7 @@ type TrainingReporter struct {
 
 	model   *core.Model
 	dataset core.IDataset
-	csts    *utils.Constants
+	config  *core.ModelConfig
 
 	grid          *ui.Grid
 	layersWidget  *widget.LayersWidget
@@ -23,12 +22,12 @@ type TrainingReporter struct {
 	metricsWidget *widget.MetricsWidget
 }
 
-func NewTrainingReporter(trainer *core.Trainer, csts *utils.Constants) *TrainingReporter {
+func NewTrainingReporter(trainer *core.Trainer, config *core.ModelConfig) *TrainingReporter {
 	app := &TrainingReporter{
 		trainer: trainer,
 		model:   nil,
 		dataset: nil,
-		csts:    csts,
+		config:  config,
 	}
 	trainer.Subscribe(app)
 	return app
@@ -45,7 +44,7 @@ func (obs *TrainingReporter) OnStart(model *core.Model, dataset core.IDataset) {
 	termWidth, termHeight := ui.TerminalDimensions()
 	obs.grid.SetRect(0, 0, termWidth, termHeight)
 
-	obs.spikeWidget = widget.NewSpikeWidget(obs.model.GetInput(), int(obs.csts.MaxTime))
+	obs.spikeWidget = widget.NewSpikeWidget(obs.model.GetInput(), int(obs.config.MaxTime))
 	obs.layersWidget = widget.NewLayersWidget(obs.model.GetAllLayer())
 	obs.metricsWidget = widget.NewMetricsWidget()
 	obs.metricsWidget.Set("speed", float64(obs.trainer.GetSpeed()))

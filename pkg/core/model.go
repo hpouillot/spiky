@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fmt"
+	"math/rand"
 	"spiky/pkg/utils"
 )
 
@@ -10,20 +12,37 @@ type Model struct {
 	World  *World
 }
 
-func NewModel(codec ICodec, layers []*Layer, constants *utils.Constants) *Model {
+func NewModel(codec ICodec, layers []*Layer, cfg *ModelConfig) *Model {
 	return &Model{
 		layers: layers,
 		codec:  codec,
-		World:  NewWorld(constants),
+		World:  NewWorld(cfg),
 	}
 }
 
-func (model *Model) Visit(fn func(neuron *Neuron)) {
+func (model *Model) VisitNeurons(visitor func(neuron *Neuron)) {
 	for i := 0; i < model.Len(); i++ {
 		model.GetLayer(i).Visit(func(idx int, neuron *Neuron) {
-			fn(neuron)
+			visitor(neuron)
 		})
 	}
+}
+
+func (model *Model) VisitEdges(visitor func(edge *Edge)) {
+	visitedEdges := map[string]*Edge{}
+	var visitNeuron func(*Neuron)
+	visitNeuron = func(node *Neuron) {
+		for _, syn := range node.synapses {
+			if _, ok := visitedEdges[syn.source.id+syn.target.id]; !ok {
+				visitedEdges[syn.source.id+syn.target.id] = syn
+				visitor(syn)
+				visitNeuron(syn.target)
+			}
+		}
+	}
+	model.GetInput().Visit(func(idx int, neuron *Neuron) {
+		visitNeuron(neuron)
+	})
 }
 
 func (model *Model) GetAllLayer() []*Layer {
@@ -69,9 +88,29 @@ func (model *Model) Decode() []float64 {
 	return y
 }
 
+func (model *Model) DecodeClass() int {
+	predictions := model.Decode()
+	fmt.Printf("Predictions %v", predictions)
+	maxValue := utils.Max(predictions)
+	maxIndices := []int{}
+	for idx, val := range predictions {
+		if val == maxValue {
+			maxIndices = append(maxIndices, idx)
+		}
+	}
+	idx := rand.Intn(len(maxIndices))
+	return maxIndices[idx]
+}
+
 func (model *Model) Run() {
 	for model.World.Next() {
 	}
+}
+
+func (model *Model) Stdp(reward float64) {
+	model.VisitEdges(func(edge *Edge) {
+		edge.Stdp(model.World, reward)
+	})
 }
 
 func (model *Model) Adjust(y []float64) float64 {

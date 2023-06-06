@@ -13,6 +13,10 @@ func (nb *Layer) Visit(fn func(idx int, value *Neuron)) {
 	}
 }
 
+func (nb *Layer) Get(idx int) *Neuron {
+	return nb.neurons[idx]
+}
+
 func (nb *Layer) Size() int {
 	return len(nb.neurons)
 }

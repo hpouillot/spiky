@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Unit tests
-RUN CGO_ENABLED=0 go test -v
+RUN CGO_ENABLED=0 go test -v $(go list ./... | grep -v ./wasm)
 
 # Build the Go app
 RUN go build -o ./out/spiky .

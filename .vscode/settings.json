@@ -1,4 +1,10 @@
 {
-    "go.autocompleteUnimportedPackages": true,
-    "gopls": { "ui.semanticTokens": true }
+	"go.autocompleteUnimportedPackages": true,
+	"gopls": {
+		"ui.semanticTokens": true,
+		"build.env": {
+			"GOOS": "js",
+			"GOARCH": "wasm"
+		}
+	}
 }

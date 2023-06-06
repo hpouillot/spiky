@@ -2,15 +2,13 @@ package codec
 
 import (
 	"fmt"
-	"spiky/pkg/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLatencyCodec(t *testing.T) {
-	constants := utils.NewDefaultConstants()
-	codec := NewLatencyCodec(255, constants)
+	codec := NewLatencyCodec(255)
 	value := 155.0
 	time := codec.Encode(&value)
 	fmt.Println(time)

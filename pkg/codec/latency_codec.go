@@ -2,21 +2,18 @@ package codec
 
 import (
 	"math"
-	"spiky/pkg/utils"
 )
 
-func NewLatencyCodec(maxValue float64, cst *utils.Constants) *LatencyCodec {
+func NewLatencyCodec(maxValue float64) *LatencyCodec {
 	return &LatencyCodec{
-		tho:       1.5,
-		maxValue:  maxValue,
-		constants: cst,
+		tho:      1.5,
+		maxValue: maxValue,
 	}
 }
 
 type LatencyCodec struct {
-	tho       float64
-	maxValue  float64
-	constants *utils.Constants
+	tho      float64
+	maxValue float64
 }
 
 func (codec *LatencyCodec) Encode(value *float64) *float64 {
