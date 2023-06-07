@@ -6,6 +6,7 @@ package cmd
 import (
 	"spiky/pkg/core"
 	"spiky/pkg/data"
+	"spiky/pkg/factory"
 	"spiky/pkg/reporter"
 
 	"github.com/sirupsen/logrus"
@@ -23,8 +24,8 @@ var trainCmd = &cobra.Command{
 		dataset := data.NewMnist("./mnist")
 		inputSize, outputSize := dataset.Shape()
 		config := core.NewDefaultConfig()
-
-		model := core.BuildSequential([]int{inputSize, outputSize}, config)
+		world := core.NewWorld(config)
+		model := factory.BuildSequential(world, []int{inputSize, outputSize})
 		trainer := core.NewTrainer(model, dataset)
 		if !Quiet {
 			reporter.NewTrainingReporter(trainer, config)

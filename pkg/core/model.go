@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"math/rand"
 	"spiky/pkg/utils"
 )
@@ -12,11 +11,11 @@ type Model struct {
 	World  *World
 }
 
-func NewModel(codec ICodec, layers []*Layer, cfg *ModelConfig) *Model {
+func NewModel(codec ICodec, layers []*Layer, world *World) *Model {
 	return &Model{
 		layers: layers,
 		codec:  codec,
-		World:  NewWorld(cfg),
+		World:  world,
 	}
 }
 
@@ -28,15 +27,15 @@ func (model *Model) VisitNeurons(visitor func(neuron *Neuron)) {
 	}
 }
 
-func (model *Model) VisitEdges(visitor func(edge *Edge)) {
-	visitedEdges := map[string]*Edge{}
+func (model *Model) VisitEdges(visitor func(edge IEdge)) {
+	visitedEdges := map[string]IEdge{}
 	var visitNeuron func(*Neuron)
 	visitNeuron = func(node *Neuron) {
 		for _, syn := range node.synapses {
-			if _, ok := visitedEdges[syn.source.id+syn.target.id]; !ok {
-				visitedEdges[syn.source.id+syn.target.id] = syn
+			if _, ok := visitedEdges[syn.GetId()]; !ok {
+				visitedEdges[syn.GetId()] = syn
 				visitor(syn)
-				visitNeuron(syn.target)
+				visitNeuron(syn.GetTarget())
 			}
 		}
 	}
@@ -71,27 +70,17 @@ func (model *Model) Reset() {
 
 func (model *Model) Encode(x []float64) {
 	input := model.GetInput()
-	input.Visit(func(idx int, node *Neuron) {
-		spikeTime := model.codec.Encode(&x[idx])
-		if spikeTime != nil {
-			model.World.Schedule(*spikeTime, node.Fire)
-		}
-	})
+	model.codec.Encode(input, x)
 }
 
 func (model *Model) Decode() []float64 {
 	output := model.GetOutput()
-	y := make([]float64, output.Size())
-	output.Visit(func(idx int, node *Neuron) {
-		y[idx] = *model.codec.Decode(node.GetSpikeTime())
-	})
-	return y
+	return model.codec.Decode(output)
 }
 
 func (model *Model) DecodeClass() int {
 	predictions := model.Decode()
-	fmt.Printf("Predictions %v", predictions)
-	maxValue := utils.Max(predictions)
+	maxValue, _ := utils.Max(predictions)
 	maxIndices := []int{}
 	for idx, val := range predictions {
 		if val == maxValue {
@@ -108,23 +97,12 @@ func (model *Model) Run() {
 }
 
 func (model *Model) Stdp(reward float64) {
-	model.VisitEdges(func(edge *Edge) {
+	model.VisitEdges(func(edge IEdge) {
 		edge.Stdp(model.World, reward)
 	})
 }
 
-func (model *Model) Adjust(y []float64) float64 {
-	model.GetOutput().Visit(func(idx int, node *Neuron) {
-		expectedSpikeTime := model.codec.Encode(&y[idx])
-		spikeTime := node.GetSpikeTime()
-		if spikeTime == nil {
-			spikeTime = &model.World.Const.MaxTime
-		}
-		if expectedSpikeTime == nil {
-			node.Adjust(model.World, *spikeTime-model.World.Const.MaxTime)
-		} else {
-			node.Adjust(model.World, *spikeTime-*expectedSpikeTime)
-		}
-	})
-	return 0.0
+func (model *Model) Fit(y []float64) {
+	model.codec.Fit(model.GetOutput(), y)
+
 }

@@ -19,7 +19,8 @@ func TestModelFitting(t *testing.T) {
 }
 
 func buildModel(inputSize int, outputSize int, config *core.ModelConfig) *core.Model {
-	codec := codec.NewLatencyCodec(255)
+	world := core.NewWorld(config)
+	codec := codec.NewLatencyCodec(world, 255)
 	input := core.NewLayer("Input", inputSize)
 	output := core.NewLayer("Output", outputSize)
 	core.DenseConnection(input, output, config)
@@ -27,6 +28,6 @@ func buildModel(inputSize int, outputSize int, config *core.ModelConfig) *core.M
 		input,
 		output,
 	}
-	model := core.NewModel(codec, layers, config)
+	model := core.NewModel(codec, layers, world)
 	return model
 }

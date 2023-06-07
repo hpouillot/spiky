@@ -1,6 +1,9 @@
 package rl
 
-import "syscall/js"
+import (
+	"math"
+	"syscall/js"
+)
 
 // Wrapper around js environment
 type WasmEnvironment struct {
@@ -22,8 +25,14 @@ func (env *WasmEnvironment) Observe(agentId int) []float64 {
 	return float64State
 }
 
-func (env *WasmEnvironment) Perform(agentId int, action int) float64 {
-	reward := env.jsEnv.Call("perform", agentId, action).Float()
+func (env *WasmEnvironment) Perform(agentId int, action []float64) float64 {
+	byteAction := make([]byte, len(action))
+	for i, v := range action {
+		byteAction[i] = byte(math.Ceil(v))
+	}
+	jsAction := js.Global().Get("Uint8Array").New(len(byteAction))
+	js.CopyBytesToJS(jsAction, byteAction)
+	reward := env.jsEnv.Call("perform", agentId, jsAction).Float()
 	return reward
 }
 

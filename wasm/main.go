@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"spiky/pkg/core"
+	"spiky/pkg/factory"
 	"spiky/pkg/rl"
 	"syscall/js"
 )
@@ -23,8 +24,8 @@ func instantiate(this js.Value, args []js.Value) interface{} {
 	if err != nil {
 		panic(err)
 	}
-
-	agent := core.BuildSequential(options.Layers, options.Config)
+	world := core.NewWorld(options.Config)
+	agent := factory.BuildSequential(world, options.Layers)
 	agentId := env.Register()
 
 	predict := func(state []float64) {
@@ -35,14 +36,14 @@ func instantiate(this js.Value, args []js.Value) interface{} {
 			agent.GetOutput().Visit(func(idx int, n *core.Neuron) {
 				n.Reset()
 				if randomIdx == idx {
-					n.SetSpikeTime(agent.World, agent.World.Const.MaxTime)
+					n.SetSpikeTime(agent.World, &agent.World.Const.MaxTime)
 				}
 			})
 		}
 	}
 
 	perform := func() {
-		action := agent.DecodeClass()
+		action := agent.Decode()
 		reward := env.Perform(agentId, action)
 		agent.Stdp(reward)
 		agent.Reset()

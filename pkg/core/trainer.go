@@ -20,12 +20,6 @@ func (t *Trainer) Subscribe(observer IObserver) {
 	t.observers = append(t.observers, observer)
 }
 
-func (t *Trainer) notify(fn func(obs IObserver)) {
-	for _, obs := range t.observers {
-		fn(obs)
-	}
-}
-
 func (trainer *Trainer) SpeedDown() {
 	trainer.speed = utils.ClampFloat(trainer.speed*0.9, 0.0001, 1.0)
 	trainer.updateTicker()
@@ -66,11 +60,10 @@ func (trainer *Trainer) Start(epochs int) {
 			model.Reset()
 			model.Encode(sample.X)
 			model.Run()
-			model.Adjust(sample.Y)
 
 			predictions := model.Decode()
-			predictedClass := utils.ArgMax(predictions)
-			expectedClass := utils.ArgMax(sample.Y)
+			_, predictedClass := utils.Max(predictions)
+			_, expectedClass := utils.Max(sample.Y)
 			errors.Push(predictedClass != expectedClass)
 
 			metrics["1. success %"] = (1.0 - float64(errors.Count())/float64(errors.Len())) * 100
@@ -80,6 +73,8 @@ func (trainer *Trainer) Start(epochs int) {
 			metrics["5. predicted"] = float64(predictedClass)
 
 			trainer.notify(func(obs IObserver) { obs.OnStep(&metrics) })
+
+			model.Fit(sample.Y)
 
 			if trainer.stopped {
 				break
@@ -95,6 +90,12 @@ func (trainer *Trainer) Start(epochs int) {
 
 func (trainer *Trainer) Stop() {
 	trainer.stopped = true
+}
+
+func (t *Trainer) notify(fn func(obs IObserver)) {
+	for _, obs := range t.observers {
+		fn(obs)
+	}
 }
 
 func NewTrainer(model *Model, dataset IDataset) *Trainer {

@@ -1,14 +1,19 @@
 package core
 
 type IEncoder interface {
-	Encode(value *float64) *float64
+	Encode(layer *Layer, input []float64)
 }
 
 type IDecoder interface {
-	Decode(time *float64) *float64
+	Decode(layer *Layer) []float64
+}
+
+type IFitter interface {
+	Fit(layer *Layer, output []float64)
 }
 
 type ICodec interface {
 	IEncoder
 	IDecoder
+	IFitter
 }

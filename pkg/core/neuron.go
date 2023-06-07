@@ -4,16 +4,16 @@ type Neuron struct {
 	id        string
 	potential float64
 	spikeTime *float64
-	synapses  []*Edge
-	dendrites []*Edge
+	synapses  []IEdge
+	dendrites []IEdge
 }
 
 func (neuron *Neuron) GetSpikeTime() *float64 {
 	return neuron.spikeTime
 }
 
-func (n *Neuron) SetSpikeTime(world *World, time float64) {
-	n.spikeTime = &time
+func (n *Neuron) SetSpikeTime(world *World, time *float64) {
+	n.spikeTime = time
 	world.markDirty(n)
 }
 
@@ -23,7 +23,8 @@ func (n *Neuron) Potentiate(world *World, delta float64) {
 }
 
 func (neuron *Neuron) Fire(world *World) {
-	neuron.SetSpikeTime(world, world.GetTime())
+	spikeTime := world.GetTime()
+	neuron.SetSpikeTime(world, &spikeTime)
 	for _, syn := range neuron.synapses {
 		syn.Forward(world)
 	}
@@ -56,7 +57,7 @@ func NewNeuron(id string) *Neuron {
 		id:        id,
 		potential: 0.0,
 		spikeTime: nil,
-		synapses:  []*Edge{},
-		dendrites: []*Edge{},
+		synapses:  []IEdge{},
+		dendrites: []IEdge{},
 	}
 }

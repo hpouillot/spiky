@@ -9,11 +9,20 @@ func DenseConnection(sourceLayer *Layer, targetLayer *Layer, config *ModelConfig
 }
 
 func MutualConnection(layer *Layer, config *ModelConfig) {
-	layer.Visit(func(idx int, source *Neuron) {
-		layer.Visit(func(idx int, target *Neuron) {
-			if source != target {
-				NewEdge(source, target, config)
+	for i := 0; i < layer.Size(); i++ {
+		for j := i + 1; j < layer.Size(); j++ {
+			NewPositiveEdge(layer.Get(i), layer.Get(j), config)
+			NewNegativeEdge(layer.Get(i), layer.Get(j), config)
+		}
+	}
+}
+
+func WTAConnection(layer *Layer, config *ModelConfig) {
+	for i := 0; i < layer.Size(); i++ {
+		for j := 0; j < layer.Size(); j++ {
+			if i != j {
+				NewNegativeEdge(layer.Get(i), layer.Get(j), config)
 			}
-		})
-	})
+		}
+	}
 }

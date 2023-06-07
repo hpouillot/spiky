@@ -19,9 +19,7 @@ func (w *World) GetTime() float64 {
 }
 
 func (w *World) markDirty(n *Neuron) {
-	if _, ok := w.dirtyNeurons[n.id]; !ok {
-		w.dirtyNeurons[n.id] = n
-	}
+	w.dirtyNeurons[n.id] = n
 }
 
 func (w *World) setTime(time float64) {
